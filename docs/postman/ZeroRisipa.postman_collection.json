@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "ZeroRisipa API",
-    "description": "Teste de integrare pentru primul livrabil: auth, cămară, ingrediente, rețete.\nRulează folderele în ordine (Collection Runner): Login salvează tokenul automat.",
+    "description": "Integration tests for the first deliverable: auth, pantry, ingredients, recipes.\nRun the folders in order (Collection Runner): Login saves the token automatically.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -61,7 +61,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"API și baza de date răspund\", () => {",
+                  "pm.test(\"API and database respond\", () => {",
                   "    pm.expect(pm.response.json()).to.eql({ status: \"ok\", database: \"ok\" });",
                   "});"
                 ]
@@ -98,9 +98,9 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Email nou la fiecare rulare, ca colecția să poată fi rulată de oricâte ori.",
+                  "// New email on every run, so the collection can be run any number of times.",
                   "pm.collectionVariables.set(\"email\", `student_${Date.now()}@example.com`);",
-                  "pm.collectionVariables.set(\"password\", \"parola123\");"
+                  "pm.collectionVariables.set(\"password\", \"password123\");"
                 ]
               }
             },
@@ -111,7 +111,7 @@
                 "exec": [
                   "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
                   "const user = pm.response.json();",
-                  "pm.test(\"Răspunsul nu conține parola\", () => {",
+                  "pm.test(\"Response does not contain the password\", () => {",
                   "    pm.expect(user).to.have.all.keys(\"id\", \"email\", \"full_name\", \"is_active\", \"created_at\");",
                   "    pm.expect(user.email).to.eql(pm.collectionVariables.get(\"email\"));",
                   "});"
@@ -147,7 +147,7 @@
           }
         },
         {
-          "name": "Register - email duplicat",
+          "name": "Register - duplicate email",
           "event": [
             {
               "listen": "test",
@@ -155,7 +155,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
-                  "pm.test(\"Mesaj de eroare\", () => pm.expect(pm.response.json().detail).to.be.a(\"string\"));"
+                  "pm.test(\"Error message\", () => pm.expect(pm.response.json().detail).to.be.a(\"string\"));"
                 ]
               }
             }
@@ -188,7 +188,7 @@
           }
         },
         {
-          "name": "Register - parolă prea scurtă",
+          "name": "Register - password too short",
           "event": [
             {
               "listen": "test",
@@ -223,12 +223,12 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"scurt_{{$timestamp}}@example.com\",\n  \"password\": \"123\"\n}"
+              "raw": "{\n  \"email\": \"short_{{$timestamp}}@example.com\",\n  \"password\": \"123\"\n}"
             }
           }
         },
         {
-          "name": "Login - parolă greșită",
+          "name": "Login - wrong password",
           "event": [
             {
               "listen": "test",
@@ -263,7 +263,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"gresita123\"\n}"
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"wrong123\"\n}"
             }
           }
         },
@@ -277,11 +277,11 @@
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const body = pm.response.json();",
-                  "pm.test(\"Primește token bearer\", () => {",
+                  "pm.test(\"Returns a bearer token\", () => {",
                   "    pm.expect(body.token_type).to.eql(\"bearer\");",
                   "    pm.expect(body.access_token).to.be.a(\"string\").and.not.empty;",
                   "});",
-                  "// Tokenul se salvează automat și e folosit de toate request-urile protejate.",
+                  "// The token is saved automatically and used by every protected request.",
                   "pm.environment.set(\"token\", body.access_token);",
                   "pm.collectionVariables.set(\"token\", body.access_token);"
                 ]
@@ -324,7 +324,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"E utilizatorul logat\", () => {",
+                  "pm.test(\"It is the logged-in user\", () => {",
                   "    pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get(\"email\"));",
                   "});"
                 ]
@@ -347,7 +347,7 @@
           }
         },
         {
-          "name": "Me - fără token",
+          "name": "Me - no token",
           "event": [
             {
               "listen": "test",
@@ -380,17 +380,17 @@
       ]
     },
     {
-      "name": "Ingrediente",
+      "name": "Ingredients",
       "item": [
         {
-          "name": "Adaugă ingredient",
+          "name": "Add ingredient",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.collectionVariables.set(\"ingredientName\", `ingredient test ${Date.now()}`);"
+                  "pm.collectionVariables.set(\"ingredientName\", `test ingredient ${Date.now()}`);"
                 ]
               }
             },
@@ -401,7 +401,7 @@
                 "exec": [
                   "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
                   "const ing = pm.response.json();",
-                  "pm.test(\"Structura ingredientului\", () => {",
+                  "pm.test(\"Ingredient structure\", () => {",
                   "    pm.expect(ing).to.have.all.keys(\"id\", \"name\", \"category\", \"default_unit\");",
                   "});",
                   "pm.collectionVariables.set(\"ingredientId\", ing.id);"
@@ -428,12 +428,12 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"{{ingredientName}}\",\n  \"category\": \"lactate\",\n  \"default_unit\": \"ml\"\n}"
+              "raw": "{\n  \"name\": \"{{ingredientName}}\",\n  \"category\": \"dairy\",\n  \"default_unit\": \"ml\"\n}"
             }
           }
         },
         {
-          "name": "Caută ingrediente",
+          "name": "Search ingredients",
           "event": [
             {
               "listen": "test",
@@ -441,7 +441,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"Găsește ingredientul adăugat\", () => {",
+                  "pm.test(\"Finds the added ingredient\", () => {",
                   "    const names = pm.response.json().map(i => i.name);",
                   "    pm.expect(names).to.include(pm.collectionVariables.get(\"ingredientName\"));",
                   "});"
@@ -475,17 +475,17 @@
       ]
     },
     {
-      "name": "Cămară",
+      "name": "Pantry",
       "item": [
         {
-          "name": "Adaugă în cămară",
+          "name": "Add to pantry",
           "event": [
             {
               "listen": "prerequest",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Expiră peste 2 zile, ca să apară în filtrul „expiră curând”.",
+                  "// Expires in 2 days, so it shows up in the \"expiring soon\" filter.",
                   "const d = new Date(Date.now() + 2 * 24 * 3600 * 1000);",
                   "pm.collectionVariables.set(\"expiryDate\", d.toISOString().slice(0, 10));"
                 ]
@@ -498,7 +498,7 @@
                 "exec": [
                   "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
                   "const item = pm.response.json();",
-                  "pm.test(\"Structura alimentului\", () => {",
+                  "pm.test(\"Pantry item structure\", () => {",
                   "    pm.expect(item).to.include.keys(\"id\", \"ingredient\", \"quantity\", \"unit\", \"expiry_date\");",
                   "    pm.expect(item.ingredient.id).to.eql(Number(pm.collectionVariables.get(\"ingredientId\")));",
                   "});",
@@ -531,7 +531,7 @@
           }
         },
         {
-          "name": "Adaugă în cămară - cantitate 0",
+          "name": "Add to pantry - quantity 0",
           "event": [
             {
               "listen": "test",
@@ -567,7 +567,7 @@
           }
         },
         {
-          "name": "Listă cămară",
+          "name": "List pantry",
           "event": [
             {
               "listen": "test",
@@ -576,10 +576,10 @@
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const items = pm.response.json();",
-                  "pm.test(\"Conține alimentul adăugat\", () => {",
+                  "pm.test(\"Contains the added item\", () => {",
                   "    pm.expect(items.map(i => i.id)).to.include(Number(pm.collectionVariables.get(\"pantryItemId\")));",
                   "});",
-                  "pm.test(\"Sortată după data expirării\", () => {",
+                  "pm.test(\"Sorted by expiry date\", () => {",
                   "    const dates = items.map(i => i.expiry_date);",
                   "    pm.expect(dates).to.eql([...dates].sort());",
                   "});"
@@ -608,7 +608,7 @@
           }
         },
         {
-          "name": "Expiră în 3 zile",
+          "name": "Expiring within 3 days",
           "event": [
             {
               "listen": "test",
@@ -616,7 +616,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"Alimentul apare în filtru\", () => {",
+                  "pm.test(\"The item shows up in the filter\", () => {",
                   "    const ids = pm.response.json().map(i => i.id);",
                   "    pm.expect(ids).to.include(Number(pm.collectionVariables.get(\"pantryItemId\")));",
                   "});"
@@ -645,7 +645,7 @@
           }
         },
         {
-          "name": "Detaliu aliment",
+          "name": "Pantry item detail",
           "event": [
             {
               "listen": "test",
@@ -653,7 +653,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"Aceeași cantitate\", () => pm.expect(pm.response.json().quantity).to.eql(\"500.00\"));"
+                  "pm.test(\"Same quantity\", () => pm.expect(pm.response.json().quantity).to.eql(\"500.00\"));"
                 ]
               }
             }
@@ -674,7 +674,7 @@
           }
         },
         {
-          "name": "Modifică cantitatea",
+          "name": "Update quantity",
           "event": [
             {
               "listen": "test",
@@ -682,7 +682,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
-                  "pm.test(\"Cantitatea e actualizată\", () => pm.expect(pm.response.json().quantity).to.eql(\"250.00\"));"
+                  "pm.test(\"Quantity is updated\", () => pm.expect(pm.response.json().quantity).to.eql(\"250.00\"));"
                 ]
               }
             }
@@ -712,7 +712,7 @@
           }
         },
         {
-          "name": "Cămară - fără token",
+          "name": "Pantry - no token",
           "event": [
             {
               "listen": "test",
@@ -742,7 +742,7 @@
           }
         },
         {
-          "name": "Șterge aliment",
+          "name": "Delete pantry item",
           "event": [
             {
               "listen": "test",
@@ -770,7 +770,7 @@
           }
         },
         {
-          "name": "Detaliu aliment șters",
+          "name": "Deleted pantry item detail",
           "event": [
             {
               "listen": "test",
@@ -800,10 +800,10 @@
       ]
     },
     {
-      "name": "Rețete",
+      "name": "Recipes",
       "item": [
         {
-          "name": "Listă rețete",
+          "name": "List recipes",
           "event": [
             {
               "listen": "test",
@@ -812,12 +812,12 @@
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const page = pm.response.json();",
-                  "pm.test(\"Structura paginării\", () => {",
+                  "pm.test(\"Pagination structure\", () => {",
                   "    pm.expect(page).to.have.all.keys(\"items\", \"total\", \"limit\", \"offset\");",
                   "    pm.expect(page.limit).to.eql(5);",
                   "    pm.expect(page.items.length).to.be.at.most(5);",
                   "});",
-                  "// Dacă seed-ul nu a fost rulat, lista e goală și detaliul se sare.",
+                  "// If the seed was not run, the list is empty and the detail request is skipped.",
                   "pm.collectionVariables.set(\"recipeId\", page.items.length ? page.items[0].id : \"\");"
                 ]
               }
@@ -851,7 +851,7 @@
           }
         },
         {
-          "name": "Detaliu rețetă",
+          "name": "Recipe detail",
           "event": [
             {
               "listen": "prerequest",
@@ -859,7 +859,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "if (!pm.collectionVariables.get(\"recipeId\")) {",
-                  "    console.log(\"Nu există rețete (rulează python -m app.seed); sar peste detaliu.\");",
+                  "    console.log(\"No recipes found (run python -m app.seed); skipping the detail request.\");",
                   "    pm.execution.skipRequest();",
                   "}"
                 ]
@@ -872,7 +872,7 @@
                 "exec": [
                   "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
                   "const recipe = pm.response.json();",
-                  "pm.test(\"Are instrucțiuni și ingrediente\", () => {",
+                  "pm.test(\"Has instructions and ingredients\", () => {",
                   "    pm.expect(recipe.instructions).to.be.a(\"string\").and.not.empty;",
                   "    pm.expect(recipe.ingredients).to.be.an(\"array\").and.not.empty;",
                   "    pm.expect(recipe.ingredients[0]).to.have.all.keys(\"ingredient\", \"quantity\", \"unit\");",
@@ -900,7 +900,7 @@
           }
         },
         {
-          "name": "Rețetă inexistentă",
+          "name": "Recipe not found",
           "event": [
             {
               "listen": "test",

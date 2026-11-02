@@ -3,11 +3,11 @@ from fastapi.testclient import TestClient
 from app.core.security import create_access_token
 
 
-def register(client: TestClient, email: str = "ana@example.com", password: str = "parola123"):
+def register(client: TestClient, email: str = "ana@example.com", password: str = "password123"):
     return client.post("/auth/register", json={"email": email, "password": password})
 
 
-def login(client: TestClient, email: str = "ana@example.com", password: str = "parola123"):
+def login(client: TestClient, email: str = "ana@example.com", password: str = "password123"):
     return client.post("/auth/login", json={"email": email, "password": password})
 
 
@@ -34,20 +34,20 @@ def test_register_duplicate_email_case_insensitive(client: TestClient) -> None:
 
 
 def test_register_rejects_short_password_and_bad_email(client: TestClient) -> None:
-    assert register(client, password="scurt").status_code == 422
-    assert register(client, email="nu-e-email").status_code == 422
+    assert register(client, password="short").status_code == 422
+    assert register(client, email="not-an-email").status_code == 422
 
 
 def test_login_wrong_password(client: TestClient) -> None:
     register(client)
-    assert login(client, password="gresita123").status_code == 401
-    assert login(client, email="altcineva@example.com").status_code == 401
+    assert login(client, password="wrong123").status_code == 401
+    assert login(client, email="someone.else@example.com").status_code == 401
 
 
 def test_me_requires_valid_token(client: TestClient) -> None:
     assert client.get("/auth/me").status_code == 401
     bad = {"Authorization": "Bearer token-invalid"}
     assert client.get("/auth/me", headers=bad).status_code == 401
-    # Token valid ca semnătură, dar pentru un utilizator care nu există.
+    # Token with a valid signature, but for a user that doesn't exist.
     ghost = {"Authorization": f"Bearer {create_access_token(999999)}"}
     assert client.get("/auth/me", headers=ghost).status_code == 401

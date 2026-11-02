@@ -1,4 +1,4 @@
-"""schema initiala: users, ingredients, pantry, recipes
+"""initial schema: users, ingredients, pantry, recipes
 
 Revision ID: 3394ab9f240c
 Revises: 

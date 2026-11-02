@@ -13,13 +13,13 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    """Dependency pentru endpoint-urile care necesită login.
+    """Dependency for endpoints that require login.
 
-    Folosire: `user: User = Depends(get_current_user)`.
+    Usage: `user: User = Depends(get_current_user)`.
     """
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Nu ești autentificat sau tokenul a expirat",
+        detail="Not authenticated or the token has expired",
         headers={"WWW-Authenticate": "Bearer"},
     )
     if credentials is None:

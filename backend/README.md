@@ -1,53 +1,53 @@
 # ZeroRisipa – Backend
 
-API-ul aplicației ZeroRisipa: Python + FastAPI, PostgreSQL, SQLAlchemy 2 și Alembic pentru migrații.
+The ZeroRisipa API: Python + FastAPI, PostgreSQL, SQLAlchemy 2 and Alembic for migrations.
 
-## Structură
+## Structure
 
 ```
 backend/
 ├── app/
-│   ├── main.py          # aplicația FastAPI (CORS, routere)
-│   ├── core/config.py   # setări citite din .env
-│   ├── db/              # engine, sesiune, Base pentru modele
-│   ├── models/          # modele SQLAlchemy (tabele)
-│   ├── schemas/         # scheme Pydantic (request/response)
-│   ├── routers/         # endpoint-uri, câte un fișier pe resursă
-│   └── services/        # logica de business
-├── alembic/             # migrații
-├── tests/               # teste PyTest
-├── docker-compose.yml   # PostgreSQL local
-└── .env.example         # model pentru .env
+│   ├── main.py          # FastAPI app (CORS, routers)
+│   ├── core/config.py   # settings read from .env
+│   ├── db/              # engine, session, Base for models
+│   ├── models/          # SQLAlchemy models (tables)
+│   ├── schemas/         # Pydantic schemas (request/response)
+│   ├── routers/         # endpoints, one file per resource
+│   └── services/        # business logic
+├── alembic/             # migrations
+├── tests/               # PyTest tests
+├── docker-compose.yml   # local PostgreSQL
+└── .env.example         # template for .env
 ```
 
-## Baza de date
+## Database
 
-Tabele: `users`, `ingredients`, `pantry_items`, `recipes`, `recipe_ingredients`. Diagrama ERD și deciziile de design sunt în [docs/ERD.md](../docs/ERD.md).
+Tables: `users`, `ingredients`, `pantry_items`, `recipes`, `recipe_ingredients`. The ERD and the design decisions are in [docs/ERD.md](../docs/ERD.md).
 
-## Cerințe
+## Requirements
 
 - Python 3.11+
-- Docker + Docker Compose (pentru PostgreSQL)
+- Docker + Docker Compose (for PostgreSQL)
 
-## Pornire locală
+## Running locally
 
-Toate comenzile se rulează din folderul `backend/`.
+Run every command from the `backend/` folder.
 
-1. **Configurare**
+1. **Configuration**
 
    ```bash
    cp .env.example .env
    ```
 
-   `.env` nu se pune în repo. Valorile implicite merg pentru dezvoltare locală.
+   `.env` is not committed. The default values work for local development.
 
-2. **Pornește PostgreSQL**
+2. **Start PostgreSQL**
 
    ```bash
    docker compose up -d db
    ```
 
-3. **Mediu virtual și dependențe**
+3. **Virtual environment and dependencies**
 
    ```bash
    python -m venv .venv
@@ -55,38 +55,38 @@ Toate comenzile se rulează din folderul `backend/`.
    pip install -r requirements.txt
    ```
 
-4. **Migrații**
+4. **Migrations**
 
    ```bash
    alembic upgrade head
    ```
 
-5. **Date inițiale (seed)**
+5. **Initial data (seed)**
 
    ```bash
    python -m app.seed
    ```
 
-   Încarcă ingredientele din `seed/ingredients.json` și rețetele din `seed/recipes.json`. Se poate rula de oricâte ori: ce există deja (după nume) se actualizează, nu se dublează.
+   Loads the ingredients from `seed/ingredients.json` and the recipes from `seed/recipes.json`. You can run it any number of times: anything that already exists (matched by name) is updated, not duplicated.
 
-6. **Pornește API-ul**
+6. **Start the API**
 
    ```bash
    uvicorn app.main:app --reload
    ```
 
-   - Documentație interactivă: http://localhost:8000/docs
-   - Verificare: http://localhost:8000/health trebuie să răspundă `{"status": "ok", "database": "ok"}`
+   - Interactive docs: http://localhost:8000/docs
+   - Check: http://localhost:8000/health should return `{"status": "ok", "database": "ok"}`
 
-## Autentificare
+## Authentication
 
-| Endpoint | Ce face |
+| Endpoint | What it does |
 |---|---|
-| `POST /auth/register` | creează cont: `{"email", "password", "full_name"?}`; parola are minim 8 caractere și se salvează hash-uită cu bcrypt |
+| `POST /auth/register` | creates an account: `{"email", "password", "full_name"?}`; the password needs at least 8 characters and is stored hashed with bcrypt |
 | `POST /auth/login` | `{"email", "password"}` → `{"access_token", "token_type": "bearer"}` |
-| `GET /auth/me` | datele utilizatorului logat; cere header `Authorization: Bearer <token>` |
+| `GET /auth/me` | the logged-in user's details; requires the `Authorization: Bearer <token>` header |
 
-Ca să protejezi un endpoint nou, adaugă dependency-ul `get_current_user`:
+To protect a new endpoint, add the `get_current_user` dependency:
 
 ```python
 from app.core.deps import get_current_user
@@ -96,47 +96,47 @@ from app.models import User
 def list_pantry(user: User = Depends(get_current_user)): ...
 ```
 
-În http://localhost:8000/docs: apelează `/auth/login`, copiază `access_token`, apasă **Authorize** și lipește tokenul.
+In http://localhost:8000/docs: call `/auth/login`, copy the `access_token`, click **Authorize** and paste the token.
 
-Tokenul expiră după `ACCESS_TOKEN_EXPIRE_MINUTES` (implicit 60). Cheia de semnare e `JWT_SECRET_KEY` din `.env`.
+The token expires after `ACCESS_TOKEN_EXPIRE_MINUTES` (60 by default). The signing key is `JWT_SECRET_KEY` in `.env`.
 
-## Cămara (inventar) și catalogul de alimente
+## Pantry and food catalogue
 
-Toate endpoint-urile `/pantry` cer login. Fiecare utilizator vede și modifică doar alimentele lui; pentru alimentul altcuiva răspunsul e 404.
+Every `/pantry` endpoint requires login. Each user only sees and changes their own items; someone else's item returns 404.
 
-| Endpoint | Ce face |
+| Endpoint | What it does |
 |---|---|
-| `GET /ingredients?q=lap` | caută în catalog după nume (pentru autocomplete); fără login |
-| `POST /ingredients` | adaugă un aliment în catalog: `{"name", "default_unit", "category"?}`; cere login |
-| `GET /pantry` | cămara ta; `sort=expiry_date` (implicit), `-expiry_date`, `created_at`, `-created_at`; `expiring_within_days=N` filtrează ce expiră curând |
+| `GET /ingredients?q=mil` | searches the catalogue by name (for autocomplete); no login needed |
+| `POST /ingredients` | adds a food to the catalogue: `{"name", "default_unit", "category"?}`; requires login |
+| `GET /pantry` | your pantry; `sort=expiry_date` (default), `-expiry_date`, `created_at`, `-created_at`; `expiring_within_days=N` keeps only what expires soon |
 | `POST /pantry` | `{"ingredient_id", "quantity", "unit", "expiry_date"}` |
-| `GET /pantry/{id}` | un aliment din cămară |
-| `PATCH /pantry/{id}` | modifică doar câmpurile trimise |
-| `DELETE /pantry/{id}` | șterge alimentul |
+| `GET /pantry/{id}` | one pantry item |
+| `PATCH /pantry/{id}` | changes only the fields you send |
+| `DELETE /pantry/{id}` | deletes the item |
 
-## Rețete
+## Recipes
 
-| Endpoint | Ce face |
+| Endpoint | What it does |
 |---|---|
-| `GET /recipes?limit=20&offset=0&q=...` | listă de rețete, alfabetic: `{"items", "total", "limit", "offset"}` |
-| `GET /recipes/{id}` | rețeta cu instrucțiuni și ingrediente (cantitate + unitate) |
+| `GET /recipes?limit=20&offset=0&q=...` | list of recipes, alphabetical: `{"items", "total", "limit", "offset"}` |
+| `GET /recipes/{id}` | the recipe with instructions and ingredients (quantity + unit) |
 
-Ca să adaugi sau să modifici rețete, editezi `seed/recipes.json` și rulezi din nou `python -m app.seed`. Fiecare ingredient dintr-o rețetă trebuie să existe în `seed/ingredients.json` (numele se compară fără diferență între majuscule și minuscule); altfel scriptul se oprește și îți spune ce lipsește.
+To add or change recipes, edit `seed/recipes.json` and run `python -m app.seed` again. Every ingredient in a recipe must exist in `seed/ingredients.json` (names are compared case-insensitively); otherwise the script stops and tells you what is missing.
 
-## Migrații noi
+## New migrations
 
-După ce adaugi sau modifici un model în `app/models/` (și îl imporți în `app/models/__init__.py`):
+After you add or change a model in `app/models/` (and import it in `app/models/__init__.py`):
 
 ```bash
-alembic revision --autogenerate -m "descriere scurta"
+alembic revision --autogenerate -m "short description"
 alembic upgrade head
 ```
 
-Verifică fișierul generat în `alembic/versions/` înainte de commit.
+Check the generated file in `alembic/versions/` before committing.
 
-## Teste
+## Tests
 
-Cu baza de date pornită:
+With the database running:
 
 ```bash
 pytest
@@ -144,9 +144,9 @@ pytest
 
 ## Postman
 
-Colecția cu toate endpoint-urile și testele ei e în [docs/postman](../docs/postman/README.md).
+The collection with every endpoint and its tests is in [docs/postman](../docs/postman/README.md).
 
-## Probleme frecvente
+## Common problems
 
-- **Portul 5432 e ocupat** (ai deja Postgres instalat): schimbă `POSTGRES_PORT` în `.env`, de exemplu `5433`, apoi `docker compose up -d db` din nou.
-- **`/health` returnează 503**: containerul `db` nu rulează sau datele din `.env` nu se potrivesc. Verifică cu `docker compose ps`.
+- **Port 5432 is taken** (you already have Postgres installed): change `POSTGRES_PORT` in `.env`, for example to `5433`, then run `docker compose up -d db` again.
+- **`/health` returns 503**: the `db` container isn't running or the values in `.env` don't match. Check with `docker compose ps`.

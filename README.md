@@ -1,5 +1,5 @@
 # ZeroRisipa
 
-Aplicație care reduce risipa alimentară: cămară cu date de expirare și planuri de mese care folosesc mai întâi ingredientele care expiră.
+An app that reduces food waste: a pantry with expiry dates and meal plans that use up the ingredients expiring first.
 
-- `backend/` – API FastAPI + PostgreSQL (vezi backend/README.md)
+- `backend/` – FastAPI + PostgreSQL API (see backend/README.md)

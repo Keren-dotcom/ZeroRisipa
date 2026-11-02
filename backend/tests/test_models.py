@@ -12,8 +12,8 @@ from app.models import Ingredient, PantryItem, Recipe, RecipeIngredient, User
 
 @pytest.fixture
 def db():
-    # Necesită Postgres pornit și `alembic upgrade head` rulat.
-    # Totul rulează într-o tranzacție anulată la final, deci baza rămâne curată.
+    # Requires Postgres running and `alembic upgrade head` applied.
+    # Everything runs in a transaction rolled back at the end, so the database stays clean.
     connection = engine.connect()
     transaction = connection.begin()
     session = Session(bind=connection, join_transaction_mode="create_savepoint")
@@ -25,28 +25,28 @@ def db():
 
 def test_pantry_and_recipe_roundtrip(db: Session) -> None:
     user = User(email="ana@example.com", hashed_password="hash")
-    lapte = Ingredient(name="lapte", category="lactate", default_unit="ml")
-    oua = Ingredient(name="ouă", category="ouă", default_unit="buc")
-    db.add_all([user, lapte, oua])
+    milk = Ingredient(name="milk", category="dairy", default_unit="ml")
+    eggs = Ingredient(name="eggs", category="eggs", default_unit="pcs")
+    db.add_all([user, milk, eggs])
     db.flush()
 
     db.add(
         PantryItem(
             user=user,
-            ingredient=lapte,
+            ingredient=milk,
             quantity=Decimal("500"),
             unit="ml",
             expiry_date=date.today() + timedelta(days=2),
         )
     )
     clatite = Recipe(
-        name="Clătite",
-        instructions="Amestecă și prăjește.",
+        name="Pancakes",
+        instructions="Mix and fry.",
         servings=4,
         prep_time_minutes=30,
         ingredients=[
-            RecipeIngredient(ingredient=lapte, quantity=Decimal("300"), unit="ml"),
-            RecipeIngredient(ingredient=oua, quantity=Decimal("2"), unit="buc"),
+            RecipeIngredient(ingredient=milk, quantity=Decimal("300"), unit="ml"),
+            RecipeIngredient(ingredient=eggs, quantity=Decimal("2"), unit="pcs"),
         ],
     )
     db.add(clatite)
@@ -56,29 +56,29 @@ def test_pantry_and_recipe_roundtrip(db: Session) -> None:
     assert user.is_active is True
     assert len(user.pantry_items) == 1
     names = {ri.ingredient.name for ri in clatite.ingredients}
-    assert names == {"lapte", "ouă"}
+    assert names == {"milk", "eggs"}
 
-    # Alimentele care expiră în 3 zile, ordonate după expirare.
+    # Items expiring within 3 days, ordered by expiry.
     soon = db.scalars(
         select(PantryItem)
         .where(PantryItem.user_id == user.id)
         .where(PantryItem.expiry_date <= date.today() + timedelta(days=3))
         .order_by(PantryItem.expiry_date)
     ).all()
-    assert [p.ingredient.name for p in soon] == ["lapte"]
+    assert [p.ingredient.name for p in soon] == ["milk"]
 
 
 def test_email_is_unique(db: Session) -> None:
-    db.add(User(email="dublu@example.com", hashed_password="x"))
+    db.add(User(email="duplicate@example.com", hashed_password="x"))
     db.flush()
-    db.add(User(email="dublu@example.com", hashed_password="y"))
+    db.add(User(email="duplicate@example.com", hashed_password="y"))
     with pytest.raises(IntegrityError):
         db.flush()
 
 
 def test_quantity_must_be_positive(db: Session) -> None:
     user = User(email="b@example.com", hashed_password="x")
-    ing = Ingredient(name="morcov", default_unit="buc")
+    ing = Ingredient(name="carrot", default_unit="pcs")
     db.add_all([user, ing])
     db.flush()
     db.add(
@@ -86,7 +86,7 @@ def test_quantity_must_be_positive(db: Session) -> None:
             user=user,
             ingredient=ing,
             quantity=Decimal("0"),
-            unit="buc",
+            unit="pcs",
             expiry_date=date.today(),
         )
     )

@@ -10,8 +10,8 @@ from app.main import app
 
 @pytest.fixture
 def db_session() -> Generator[Session, None, None]:
-    # Necesită Postgres pornit și `alembic upgrade head` rulat.
-    # Fiecare test rulează într-o tranzacție anulată la final, deci baza rămâne curată.
+    # Requires Postgres running and `alembic upgrade head` applied.
+    # Each test runs in a transaction rolled back at the end, so the database stays clean.
     connection = engine.connect()
     transaction = connection.begin()
     session = Session(bind=connection, join_transaction_mode="create_savepoint")

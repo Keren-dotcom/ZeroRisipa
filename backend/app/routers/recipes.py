@@ -11,12 +11,12 @@ router = APIRouter(prefix="/recipes", tags=["recipes"])
 
 @router.get("", response_model=RecipePage)
 def list_recipes(
-    q: str | None = Query(default=None, description="Caută după numele rețetei"),
+    q: str | None = Query(default=None, description="Search by recipe name"),
     limit: int = Query(default=20, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ) -> RecipePage:
-    """Rețetele predefinite, ordonate alfabetic, cu paginare."""
+    """Predefined recipes, in alphabetical order, paginated."""
     stmt = select(Recipe)
     if q:
         stmt = stmt.where(Recipe.name.ilike(f"%{q.strip()}%"))
@@ -27,12 +27,12 @@ def list_recipes(
 
 @router.get("/{recipe_id}", response_model=RecipeRead)
 def get_recipe(recipe_id: int, db: Session = Depends(get_db)) -> Recipe:
-    """O rețetă, cu ingredientele și cantitățile ei."""
+    """A recipe, with its ingredients and quantities."""
     recipe = db.scalar(
         select(Recipe)
         .where(Recipe.id == recipe_id)
         .options(selectinload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient))
     )
     if recipe is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Rețeta nu există")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recipe not found")
     return recipe

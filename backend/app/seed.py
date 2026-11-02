@@ -1,11 +1,11 @@
-"""Încarcă în baza de date catalogul de ingrediente și rețetele din folderul `seed/`.
+"""Load the ingredient catalogue and the recipes from the `seed/` folder into the database.
 
-Rulare (din `backend/`, după `alembic upgrade head`):
+Run (from `backend/`, after `alembic upgrade head`):
 
     python -m app.seed
 
-Scriptul poate fi rulat de mai multe ori: ingredientele și rețetele existente
-(după nume) sunt actualizate, nu duplicate.
+The script can be run many times: existing ingredients and recipes
+(matched by name) are updated, not duplicated.
 """
 
 import json
@@ -48,7 +48,7 @@ def seed_recipes(db: Session, data: list[dict], ingredients: dict[str, Ingredien
         ]
         if missing:
             raise ValueError(
-                f"Rețeta „{row['name']}” folosește ingrediente care lipsesc din "
+                f"Recipe \"{row['name']}\" uses ingredients missing from "
                 f"ingredients.json: {', '.join(missing)}"
             )
 
@@ -60,7 +60,7 @@ def seed_recipes(db: Session, data: list[dict], ingredients: dict[str, Ingredien
         recipe.instructions = row["instructions"]
         recipe.servings = row["servings"]
         recipe.prep_time_minutes = row["prep_time_minutes"]
-        # Lista de ingrediente se înlocuiește complet, ca să reflecte fișierul.
+        # Replace the ingredient list completely, so it matches the file.
         recipe.ingredients.clear()
         db.flush()
         recipe.ingredients.extend(
@@ -85,7 +85,7 @@ def main() -> None:
     with SessionLocal() as db:
         n_ingredients, n_recipes = run(db)
         db.commit()
-    print(f"Seed gata: {n_ingredients} ingrediente în catalog, {n_recipes} rețete încărcate.")
+    print(f"Seed done: {n_ingredients} ingredients in the catalogue, {n_recipes} recipes loaded.")
 
 
 if __name__ == "__main__":

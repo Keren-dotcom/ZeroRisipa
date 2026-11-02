@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 class PantryItem(TimestampMixin, Base):
-    """Un aliment din cămara unui utilizator, cu cantitate și dată de expirare."""
+    """A food item in a user's pantry, with quantity and expiry date."""
 
     __tablename__ = "pantry_items"
     __table_args__ = (CheckConstraint("quantity > 0", name="quantity_positive"),)
@@ -28,7 +28,7 @@ class PantryItem(TimestampMixin, Base):
     )
     quantity: Mapped[Decimal] = mapped_column(Numeric(10, 2))
     unit: Mapped[str] = mapped_column(String(20))
-    # Index: algoritmul de optimizare caută des alimentele care expiră curând.
+    # Indexed: the optimization algorithm often looks up items that expire soon.
     expiry_date: Mapped[date] = mapped_column(Date, index=True)
 
     user: Mapped["User"] = relationship(back_populates="pantry_items")

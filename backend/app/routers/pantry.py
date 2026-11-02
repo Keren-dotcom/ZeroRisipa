@@ -21,11 +21,11 @@ SORT_OPTIONS = {
 
 
 def _get_own_item(db: Session, item_id: int, user: User) -> PantryItem:
-    """Returnează alimentul doar dacă e al utilizatorului; altfel 404, ca să nu dezvăluim
-    că există în cămara altcuiva."""
+    """Return the item only if it belongs to the user; otherwise 404, so we don't reveal
+    that it exists in someone else's pantry."""
     item = db.get(PantryItem, item_id)
     if item is None or item.user_id != user.id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Alimentul nu există")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Pantry item not found")
     return item
 
 
@@ -33,7 +33,7 @@ def _check_ingredient(db: Session, ingredient_id: int) -> None:
     if db.get(Ingredient, ingredient_id) is None:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Ingredientul nu există în catalog",
+            detail="Ingredient not found in the catalogue",
         )
 
 
@@ -41,12 +41,12 @@ def _check_ingredient(db: Session, ingredient_id: int) -> None:
 def list_pantry(
     sort: Literal["expiry_date", "-expiry_date", "created_at", "-created_at"] = "expiry_date",
     expiring_within_days: int | None = Query(
-        default=None, ge=0, description="Doar alimentele care expiră în următoarele N zile"
+        default=None, ge=0, description="Only items that expire within the next N days"
     ),
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> list[PantryItem]:
-    """Cămara utilizatorului logat. Implicit, cele care expiră primele sunt sus."""
+    """The logged-in user's pantry. By default, items expiring first are on top."""
     stmt = (
         select(PantryItem)
         .options(joinedload(PantryItem.ingredient))

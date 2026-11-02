@@ -1,4 +1,4 @@
-# Importă aici toate modelele, ca Alembic să le vadă la autogenerate.
+# Import every model here so Alembic sees it during autogenerate.
 from app.db.base import Base  # noqa: F401
 from app.models.ingredient import Ingredient  # noqa: F401
 from app.models.pantry_item import PantryItem  # noqa: F401
