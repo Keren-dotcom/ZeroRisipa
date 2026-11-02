@@ -20,6 +20,10 @@ backend/
 └── .env.example         # model pentru .env
 ```
 
+## Baza de date
+
+Tabele: `users`, `ingredients`, `pantry_items`, `recipes`, `recipe_ingredients`. Diagrama ERD și deciziile de design sunt în [docs/ERD.md](../docs/ERD.md).
+
 ## Cerințe
 
 - Python 3.11+
