@@ -92,6 +92,20 @@ def list_pantry(user: User = Depends(get_current_user)): ...
 
 Tokenul expiră după `ACCESS_TOKEN_EXPIRE_MINUTES` (implicit 60). Cheia de semnare e `JWT_SECRET_KEY` din `.env`.
 
+## Cămara (inventar) și catalogul de alimente
+
+Toate endpoint-urile `/pantry` cer login. Fiecare utilizator vede și modifică doar alimentele lui; pentru alimentul altcuiva răspunsul e 404.
+
+| Endpoint | Ce face |
+|---|---|
+| `GET /ingredients?q=lap` | caută în catalog după nume (pentru autocomplete); fără login |
+| `POST /ingredients` | adaugă un aliment în catalog: `{"name", "default_unit", "category"?}`; cere login |
+| `GET /pantry` | cămara ta; `sort=expiry_date` (implicit), `-expiry_date`, `created_at`, `-created_at`; `expiring_within_days=N` filtrează ce expiră curând |
+| `POST /pantry` | `{"ingredient_id", "quantity", "unit", "expiry_date"}` |
+| `GET /pantry/{id}` | un aliment din cămară |
+| `PATCH /pantry/{id}` | modifică doar câmpurile trimise |
+| `DELETE /pantry/{id}` | șterge alimentul |
+
 ## Migrații noi
 
 După ce adaugi sau modifici un model în `app/models/` (și îl imporți în `app/models/__init__.py`):
