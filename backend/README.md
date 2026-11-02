@@ -142,6 +142,10 @@ Cu baza de date pornită:
 pytest
 ```
 
+## Postman
+
+Colecția cu toate endpoint-urile și testele ei e în [docs/postman](../docs/postman/README.md).
+
 ## Probleme frecvente
 
 - **Portul 5432 e ocupat** (ai deja Postgres instalat): schimbă `POSTGRES_PORT` în `.env`, de exemplu `5433`, apoi `docker compose up -d db` din nou.

@@ -1,0 +1,936 @@
+{
+  "info": {
+    "name": "ZeroRisipa API",
+    "description": "Teste de integrare pentru primul livrabil: auth, cămară, ingrediente, rețete.\nRulează folderele în ordine (Collection Runner): Login salvează tokenul automat.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "email",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "ingredientId",
+      "value": ""
+    },
+    {
+      "key": "ingredientName",
+      "value": ""
+    },
+    {
+      "key": "pantryItemId",
+      "value": ""
+    },
+    {
+      "key": "expiryDate",
+      "value": ""
+    },
+    {
+      "key": "recipeId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"API și baza de date răspund\", () => {",
+                  "    pm.expect(pm.response.json()).to.eql({ status: \"ok\", database: \"ok\" });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Email nou la fiecare rulare, ca colecția să poată fi rulată de oricâte ori.",
+                  "pm.collectionVariables.set(\"email\", `student_${Date.now()}@example.com`);",
+                  "pm.collectionVariables.set(\"password\", \"parola123\");"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const user = pm.response.json();",
+                  "pm.test(\"Răspunsul nu conține parola\", () => {",
+                  "    pm.expect(user).to.have.all.keys(\"id\", \"email\", \"full_name\", \"is_active\", \"created_at\");",
+                  "    pm.expect(user.email).to.eql(pm.collectionVariables.get(\"email\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"full_name\": \"Student Test\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register - email duplicat",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mesaj de eroare\", () => pm.expect(pm.response.json().detail).to.be.a(\"string\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register - parolă prea scurtă",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"422 Unprocessable Entity\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"scurt_{{$timestamp}}@example.com\",\n  \"password\": \"123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login - parolă greșită",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"gresita123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Primește token bearer\", () => {",
+                  "    pm.expect(body.token_type).to.eql(\"bearer\");",
+                  "    pm.expect(body.access_token).to.be.a(\"string\").and.not.empty;",
+                  "});",
+                  "// Tokenul se salvează automat și e folosit de toate request-urile protejate.",
+                  "pm.environment.set(\"token\", body.access_token);",
+                  "pm.collectionVariables.set(\"token\", body.access_token);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Me",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"E utilizatorul logat\", () => {",
+                  "    pm.expect(pm.response.json().email).to.eql(pm.collectionVariables.get(\"email\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Me - fără token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Ingrediente",
+      "item": [
+        {
+          "name": "Adaugă ingredient",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"ingredientName\", `ingredient test ${Date.now()}`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const ing = pm.response.json();",
+                  "pm.test(\"Structura ingredientului\", () => {",
+                  "    pm.expect(ing).to.have.all.keys(\"id\", \"name\", \"category\", \"default_unit\");",
+                  "});",
+                  "pm.collectionVariables.set(\"ingredientId\", ing.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ingredients",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ingredients"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{ingredientName}}\",\n  \"category\": \"lactate\",\n  \"default_unit\": \"ml\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Caută ingrediente",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Găsește ingredientul adăugat\", () => {",
+                  "    const names = pm.response.json().map(i => i.name);",
+                  "    pm.expect(names).to.include(pm.collectionVariables.get(\"ingredientName\"));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ingredients?q={{ingredientName}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ingredients"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "{{ingredientName}}"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cămară",
+      "item": [
+        {
+          "name": "Adaugă în cămară",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Expiră peste 2 zile, ca să apară în filtrul „expiră curând”.",
+                  "const d = new Date(Date.now() + 2 * 24 * 3600 * 1000);",
+                  "pm.collectionVariables.set(\"expiryDate\", d.toISOString().slice(0, 10));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const item = pm.response.json();",
+                  "pm.test(\"Structura alimentului\", () => {",
+                  "    pm.expect(item).to.include.keys(\"id\", \"ingredient\", \"quantity\", \"unit\", \"expiry_date\");",
+                  "    pm.expect(item.ingredient.id).to.eql(Number(pm.collectionVariables.get(\"ingredientId\")));",
+                  "});",
+                  "pm.collectionVariables.set(\"pantryItemId\", item.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pantry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ingredient_id\": \"{{ingredientId}}\",\n  \"quantity\": 500,\n  \"unit\": \"ml\",\n  \"expiry_date\": \"{{expiryDate}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Adaugă în cămară - cantitate 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"422 Unprocessable Entity\", () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pantry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ingredient_id\": \"{{ingredientId}}\",\n  \"quantity\": 0,\n  \"unit\": \"ml\",\n  \"expiry_date\": \"{{expiryDate}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Listă cămară",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const items = pm.response.json();",
+                  "pm.test(\"Conține alimentul adăugat\", () => {",
+                  "    pm.expect(items.map(i => i.id)).to.include(Number(pm.collectionVariables.get(\"pantryItemId\")));",
+                  "});",
+                  "pm.test(\"Sortată după data expirării\", () => {",
+                  "    const dates = items.map(i => i.expiry_date);",
+                  "    pm.expect(dates).to.eql([...dates].sort());",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pantry?sort=expiry_date",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry"
+              ],
+              "query": [
+                {
+                  "key": "sort",
+                  "value": "expiry_date"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Expiră în 3 zile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Alimentul apare în filtru\", () => {",
+                  "    const ids = pm.response.json().map(i => i.id);",
+                  "    pm.expect(ids).to.include(Number(pm.collectionVariables.get(\"pantryItemId\")));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pantry?expiring_within_days=3",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry"
+              ],
+              "query": [
+                {
+                  "key": "expiring_within_days",
+                  "value": "3"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detaliu aliment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Aceeași cantitate\", () => pm.expect(pm.response.json().quantity).to.eql(\"500.00\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pantry/{{pantryItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry",
+                "{{pantryItemId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Modifică cantitatea",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Cantitatea e actualizată\", () => pm.expect(pm.response.json().quantity).to.eql(\"250.00\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pantry/{{pantryItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry",
+                "{{pantryItemId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantity\": 250\n}"
+            }
+          }
+        },
+        {
+          "name": "Cămară - fără token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pantry",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Șterge aliment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"204 No Content\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pantry/{{pantryItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry",
+                "{{pantryItemId}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Detaliu aliment șters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/pantry/{{pantryItemId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pantry",
+                "{{pantryItemId}}"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rețete",
+      "item": [
+        {
+          "name": "Listă rețete",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const page = pm.response.json();",
+                  "pm.test(\"Structura paginării\", () => {",
+                  "    pm.expect(page).to.have.all.keys(\"items\", \"total\", \"limit\", \"offset\");",
+                  "    pm.expect(page.limit).to.eql(5);",
+                  "    pm.expect(page.items.length).to.be.at.most(5);",
+                  "});",
+                  "// Dacă seed-ul nu a fost rulat, lista e goală și detaliul se sare.",
+                  "pm.collectionVariables.set(\"recipeId\", page.items.length ? page.items[0].id : \"\");"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/recipes?limit=5&offset=0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recipes"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Detaliu rețetă",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.collectionVariables.get(\"recipeId\")) {",
+                  "    console.log(\"Nu există rețete (rulează python -m app.seed); sar peste detaliu.\");",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const recipe = pm.response.json();",
+                  "pm.test(\"Are instrucțiuni și ingrediente\", () => {",
+                  "    pm.expect(recipe.instructions).to.be.a(\"string\").and.not.empty;",
+                  "    pm.expect(recipe.ingredients).to.be.an(\"array\").and.not.empty;",
+                  "    pm.expect(recipe.ingredients[0]).to.have.all.keys(\"ingredient\", \"quantity\", \"unit\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/recipes/{{recipeId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recipes",
+                "{{recipeId}}"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Rețetă inexistentă",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"404 Not Found\", () => pm.response.to.have.status(404));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/recipes/999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "recipes",
+                "999999"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
