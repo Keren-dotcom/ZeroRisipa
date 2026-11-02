@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     app_env: str = "dev"
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
 
+    # Schimbă cheia în .env în afara mediului local (ex. `openssl rand -hex 32`).
+    jwt_secret_key: str = "schimba-ma-in-env"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+
     @property
     def database_url(self) -> str:
         return (
