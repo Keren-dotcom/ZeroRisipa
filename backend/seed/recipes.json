@@ -1,0 +1,190 @@
+[
+  {
+    "name": "Omletă cu legume",
+    "description": "Mic dejun rapid care folosește legumele rămase prin frigider.",
+    "instructions": "1. Taie ardeiul, roșia și ceapa cubulețe.\n2. Călește-le 3-4 minute în ulei.\n3. Bate ouăle cu sare și piper, toarnă-le peste legume.\n4. Gătește la foc mic până se închegă.",
+    "servings": 2,
+    "prep_time_minutes": 15,
+    "ingredients": [
+      {"name": "ouă", "quantity": 4, "unit": "buc"},
+      {"name": "ardei gras", "quantity": 1, "unit": "buc"},
+      {"name": "roșii", "quantity": 1, "unit": "buc"},
+      {"name": "ceapă", "quantity": 0.5, "unit": "buc"},
+      {"name": "ulei", "quantity": 15, "unit": "ml"},
+      {"name": "sare", "quantity": 2, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Clătite",
+    "description": "Bune pentru laptele și ouăle care se apropie de expirare.",
+    "instructions": "1. Amestecă ouăle cu laptele și zahărul.\n2. Adaugă treptat făina până obții un aluat fluid.\n3. Coace clătitele într-o tigaie unsă cu puțin ulei.",
+    "servings": 4,
+    "prep_time_minutes": 30,
+    "ingredients": [
+      {"name": "lapte", "quantity": 500, "unit": "ml"},
+      {"name": "ouă", "quantity": 3, "unit": "buc"},
+      {"name": "făină", "quantity": 250, "unit": "g"},
+      {"name": "zahăr", "quantity": 20, "unit": "g"},
+      {"name": "ulei", "quantity": 20, "unit": "ml"}
+    ]
+  },
+  {
+    "name": "Paste cu sos de roșii",
+    "description": "Rețetă de bază pentru roșiile prea moi pentru salată.",
+    "instructions": "1. Fierbe pastele în apă cu sare.\n2. Călește ceapa și usturoiul, adaugă roșiile tăiate și pasta de roșii.\n3. Lasă sosul 10 minute la foc mic, apoi amestecă-l cu pastele.",
+    "servings": 2,
+    "prep_time_minutes": 25,
+    "ingredients": [
+      {"name": "paste", "quantity": 200, "unit": "g"},
+      {"name": "roșii", "quantity": 3, "unit": "buc"},
+      {"name": "pastă de roșii", "quantity": 50, "unit": "g"},
+      {"name": "ceapă", "quantity": 1, "unit": "buc"},
+      {"name": "usturoi", "quantity": 2, "unit": "cățel"},
+      {"name": "ulei", "quantity": 20, "unit": "ml"}
+    ]
+  },
+  {
+    "name": "Salată grecească",
+    "description": "Fără gătit, pentru legumele proaspete și telemeaua deschisă.",
+    "instructions": "1. Taie roșiile, castravetele, ardeiul și ceapa.\n2. Adaugă telemeaua cuburi.\n3. Asezonează cu ulei, sare și zeamă de lămâie.",
+    "servings": 2,
+    "prep_time_minutes": 10,
+    "ingredients": [
+      {"name": "roșii", "quantity": 2, "unit": "buc"},
+      {"name": "castravete", "quantity": 1, "unit": "buc"},
+      {"name": "ardei gras", "quantity": 1, "unit": "buc"},
+      {"name": "ceapă", "quantity": 0.5, "unit": "buc"},
+      {"name": "brânză telemea", "quantity": 150, "unit": "g"},
+      {"name": "ulei", "quantity": 20, "unit": "ml"},
+      {"name": "lămâie", "quantity": 0.5, "unit": "buc"}
+    ]
+  },
+  {
+    "name": "Piept de pui cu orez",
+    "description": "Prânz simplu, se păstrează bine la caserolă.",
+    "instructions": "1. Fierbe orezul.\n2. Taie pieptul de pui fâșii și rumenește-l în ulei.\n3. Adaugă morcovul ras și ardeiul, gătește încă 5 minute.\n4. Servește peste orez.",
+    "servings": 2,
+    "prep_time_minutes": 35,
+    "ingredients": [
+      {"name": "piept de pui", "quantity": 300, "unit": "g"},
+      {"name": "orez", "quantity": 150, "unit": "g"},
+      {"name": "morcov", "quantity": 1, "unit": "buc"},
+      {"name": "ardei gras", "quantity": 1, "unit": "buc"},
+      {"name": "ulei", "quantity": 20, "unit": "ml"},
+      {"name": "sare", "quantity": 3, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Ciorbă de legume",
+    "description": "Folosește aproape orice legume rămase.",
+    "instructions": "1. Taie toate legumele cubulețe.\n2. Fierbe-le în 2 litri de apă cu sare circa 30 de minute.\n3. Adaugă pasta de roșii și verdețurile la final.",
+    "servings": 6,
+    "prep_time_minutes": 50,
+    "ingredients": [
+      {"name": "cartofi", "quantity": 400, "unit": "g"},
+      {"name": "morcov", "quantity": 2, "unit": "buc"},
+      {"name": "ceapă", "quantity": 1, "unit": "buc"},
+      {"name": "ardei gras", "quantity": 1, "unit": "buc"},
+      {"name": "dovlecel", "quantity": 1, "unit": "buc"},
+      {"name": "pastă de roșii", "quantity": 50, "unit": "g"},
+      {"name": "pătrunjel", "quantity": 10, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Cartofi țărănești",
+    "description": "Cartofi la tigaie cu ceapă și șuncă.",
+    "instructions": "1. Fierbe cartofii în coajă, apoi taie-i felii.\n2. Prăjește ceapa și șunca.\n3. Adaugă cartofii și rumenește-i, presară mărar.",
+    "servings": 3,
+    "prep_time_minutes": 40,
+    "ingredients": [
+      {"name": "cartofi", "quantity": 600, "unit": "g"},
+      {"name": "ceapă", "quantity": 1, "unit": "buc"},
+      {"name": "șuncă", "quantity": 100, "unit": "g"},
+      {"name": "ulei", "quantity": 30, "unit": "ml"},
+      {"name": "mărar", "quantity": 5, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Ovăz cu banane și iaurt",
+    "description": "Mic dejun pentru bananele prea coapte.",
+    "instructions": "1. Fierbe fulgii de ovăz în lapte 5 minute.\n2. Adaugă banana pisată.\n3. Servește cu iaurt deasupra.",
+    "servings": 1,
+    "prep_time_minutes": 10,
+    "ingredients": [
+      {"name": "fulgi de ovăz", "quantity": 60, "unit": "g"},
+      {"name": "lapte", "quantity": 200, "unit": "ml"},
+      {"name": "banane", "quantity": 1, "unit": "buc"},
+      {"name": "iaurt", "quantity": 100, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Ciuperci cu smântână",
+    "description": "Garnitură rapidă sau fel principal cu pâine.",
+    "instructions": "1. Călește ceapa și usturoiul în unt.\n2. Adaugă ciupercile feliate și gătește până scad.\n3. Pune smântâna și pătrunjelul, mai lasă 2 minute.",
+    "servings": 2,
+    "prep_time_minutes": 20,
+    "ingredients": [
+      {"name": "ciuperci", "quantity": 400, "unit": "g"},
+      {"name": "smântână", "quantity": 150, "unit": "g"},
+      {"name": "ceapă", "quantity": 1, "unit": "buc"},
+      {"name": "usturoi", "quantity": 2, "unit": "cățel"},
+      {"name": "unt", "quantity": 20, "unit": "g"},
+      {"name": "pătrunjel", "quantity": 5, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Sandvișuri calde",
+    "description": "Pentru pâinea care începe să se usuce.",
+    "instructions": "1. Pune pe fiecare felie de pâine șuncă, roșie și cașcaval.\n2. Coace 10 minute la 200°C.",
+    "servings": 2,
+    "prep_time_minutes": 15,
+    "ingredients": [
+      {"name": "pâine", "quantity": 4, "unit": "felie"},
+      {"name": "șuncă", "quantity": 80, "unit": "g"},
+      {"name": "cașcaval", "quantity": 80, "unit": "g"},
+      {"name": "roșii", "quantity": 1, "unit": "buc"}
+    ]
+  },
+  {
+    "name": "Chiftele la cuptor",
+    "description": "Se pot congela, utile când carnea tocată e aproape de expirare.",
+    "instructions": "1. Amestecă carnea cu oul, ceapa rasă, usturoiul și sare.\n2. Formează chiftele și pune-le în tavă.\n3. Coace 25 de minute la 200°C.",
+    "servings": 4,
+    "prep_time_minutes": 40,
+    "ingredients": [
+      {"name": "carne tocată", "quantity": 500, "unit": "g"},
+      {"name": "ouă", "quantity": 1, "unit": "buc"},
+      {"name": "ceapă", "quantity": 1, "unit": "buc"},
+      {"name": "usturoi", "quantity": 2, "unit": "cățel"},
+      {"name": "mărar", "quantity": 5, "unit": "g"},
+      {"name": "sare", "quantity": 5, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Plăcintă rapidă cu mere",
+    "description": "Pentru merele care s-au înmuiat.",
+    "instructions": "1. Amestecă ouăle, zahărul, iaurtul și făina.\n2. Adaugă merele rase.\n3. Coace 35 de minute la 180°C.",
+    "servings": 6,
+    "prep_time_minutes": 50,
+    "ingredients": [
+      {"name": "mere", "quantity": 4, "unit": "buc"},
+      {"name": "ouă", "quantity": 2, "unit": "buc"},
+      {"name": "făină", "quantity": 200, "unit": "g"},
+      {"name": "zahăr", "quantity": 100, "unit": "g"},
+      {"name": "iaurt", "quantity": 150, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Spanac cu usturoi și ou",
+    "description": "Pentru spanacul proaspăt care se ofilește repede.",
+    "instructions": "1. Călește usturoiul în unt.\n2. Adaugă spanacul și lasă-l să scadă.\n3. Servește cu ouă ochiuri.",
+    "servings": 2,
+    "prep_time_minutes": 15,
+    "ingredients": [
+      {"name": "spanac", "quantity": 300, "unit": "g"},
+      {"name": "usturoi", "quantity": 2, "unit": "cățel"},
+      {"name": "unt", "quantity": 15, "unit": "g"},
+      {"name": "ouă", "quantity": 2, "unit": "buc"}
+    ]
+  }
+]

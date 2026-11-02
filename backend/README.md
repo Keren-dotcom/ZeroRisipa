@@ -61,7 +61,15 @@ Toate comenzile se rulează din folderul `backend/`.
    alembic upgrade head
    ```
 
-5. **Pornește API-ul**
+5. **Date inițiale (seed)**
+
+   ```bash
+   python -m app.seed
+   ```
+
+   Încarcă ingredientele din `seed/ingredients.json` și rețetele din `seed/recipes.json`. Se poate rula de oricâte ori: ce există deja (după nume) se actualizează, nu se dublează.
+
+6. **Pornește API-ul**
 
    ```bash
    uvicorn app.main:app --reload
@@ -105,6 +113,15 @@ Toate endpoint-urile `/pantry` cer login. Fiecare utilizator vede și modifică 
 | `GET /pantry/{id}` | un aliment din cămară |
 | `PATCH /pantry/{id}` | modifică doar câmpurile trimise |
 | `DELETE /pantry/{id}` | șterge alimentul |
+
+## Rețete
+
+| Endpoint | Ce face |
+|---|---|
+| `GET /recipes?limit=20&offset=0&q=...` | listă de rețete, alfabetic: `{"items", "total", "limit", "offset"}` |
+| `GET /recipes/{id}` | rețeta cu instrucțiuni și ingrediente (cantitate + unitate) |
+
+Ca să adaugi sau să modifici rețete, editezi `seed/recipes.json` și rulezi din nou `python -m app.seed`. Fiecare ingredient dintr-o rețetă trebuie să existe în `seed/ingredients.json` (numele se compară fără diferență între majuscule și minuscule); altfel scriptul se oprește și îți spune ce lipsește.
 
 ## Migrații noi
 
