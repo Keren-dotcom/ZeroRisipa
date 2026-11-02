@@ -27,7 +27,10 @@ def _load(filename: str) -> list[dict]:
 
 
 def seed_ingredients(db: Session, data: list[dict]) -> dict[str, Ingredient]:
-    existing = {i.name.lower(): i for i in db.scalars(select(Ingredient))}
+    # Only the shared catalogue; users' own ingredients are never touched by the seed.
+    existing = {
+        i.name.lower(): i for i in db.scalars(select(Ingredient).where(Ingredient.owner_id.is_(None)))
+    }
     for row in data:
         name = row["name"].strip().lower()
         ingredient = existing.get(name)

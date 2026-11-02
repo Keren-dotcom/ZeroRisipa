@@ -1,6 +1,6 @@
 # Postman collection – ZeroRisipa API
 
-Integration tests for the first deliverable: health, authentication, ingredients, pantry and recipes (22 requests, 37 checks).
+Integration tests for the first deliverable: health, authentication, ingredients, pantry and recipes (23 requests, 41 checks).
 
 ## Import into Postman
 

@@ -3,7 +3,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app import seed
-from app.models import Recipe, RecipeIngredient
+from app.models import Ingredient, Recipe, RecipeIngredient, User
 
 
 def test_seed_is_idempotent(db_session: Session) -> None:
@@ -52,3 +52,23 @@ def test_list_and_detail(client: TestClient, db_session: Session) -> None:
 
 def test_recipe_not_found(client: TestClient) -> None:
     assert client.get("/recipes/999999").status_code == 404
+
+
+def test_seed_ignores_users_own_ingredients(db_session: Session) -> None:
+    user = User(email="ana@example.com", hashed_password="x")
+    db_session.add(user)
+    db_session.flush()
+    # A user's own "milk" must not be reused or changed by the seed.
+    own = Ingredient(name="milk", default_unit="l", owner_id=user.id)
+    db_session.add(own)
+    db_session.flush()
+
+    seed.run(db_session)
+
+    shared = db_session.scalar(
+        select(Ingredient).where(Ingredient.name == "milk", Ingredient.owner_id.is_(None))
+    )
+    assert shared is not None and shared.id != own.id
+    assert own.default_unit == "l"
+    pancakes = db_session.scalar(select(Recipe).where(Recipe.name == "Pancakes"))
+    assert all(ri.ingredient.owner_id is None for ri in pancakes.ingredients)

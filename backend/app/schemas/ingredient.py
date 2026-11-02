@@ -14,3 +14,4 @@ class IngredientRead(BaseModel):
     name: str
     category: str | None
     default_unit: str
+    is_custom: bool  # true for the user's own ingredients, false for the shared catalogue
