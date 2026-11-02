@@ -70,6 +70,28 @@ Toate comenzile se rulează din folderul `backend/`.
    - Documentație interactivă: http://localhost:8000/docs
    - Verificare: http://localhost:8000/health trebuie să răspundă `{"status": "ok", "database": "ok"}`
 
+## Autentificare
+
+| Endpoint | Ce face |
+|---|---|
+| `POST /auth/register` | creează cont: `{"email", "password", "full_name"?}`; parola are minim 8 caractere și se salvează hash-uită cu bcrypt |
+| `POST /auth/login` | `{"email", "password"}` → `{"access_token", "token_type": "bearer"}` |
+| `GET /auth/me` | datele utilizatorului logat; cere header `Authorization: Bearer <token>` |
+
+Ca să protejezi un endpoint nou, adaugă dependency-ul `get_current_user`:
+
+```python
+from app.core.deps import get_current_user
+from app.models import User
+
+@router.get("/pantry")
+def list_pantry(user: User = Depends(get_current_user)): ...
+```
+
+În http://localhost:8000/docs: apelează `/auth/login`, copiază `access_token`, apasă **Authorize** și lipește tokenul.
+
+Tokenul expiră după `ACCESS_TOKEN_EXPIRE_MINUTES` (implicit 60). Cheia de semnare e `JWT_SECRET_KEY` din `.env`.
+
 ## Migrații noi
 
 După ce adaugi sau modifici un model în `app/models/` (și îl imporți în `app/models/__init__.py`):
