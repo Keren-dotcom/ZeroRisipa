@@ -14,7 +14,7 @@ class PantryItemCreate(BaseModel):
 
 
 class PantryItemUpdate(BaseModel):
-    """Toate câmpurile sunt opționale: se modifică doar ce trimiți."""
+    """All fields are optional: only what you send is changed."""
 
     ingredient_id: int | None = None
     quantity: Decimal | None = Field(default=None, gt=0, max_digits=10, decimal_places=2)

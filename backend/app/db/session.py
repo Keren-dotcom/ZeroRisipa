@@ -10,7 +10,7 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 
 def get_db() -> Generator[Session, None, None]:
-    """Dependency FastAPI: o sesiune DB per request."""
+    """FastAPI dependency: one DB session per request."""
     db = SessionLocal()
     try:
         yield db

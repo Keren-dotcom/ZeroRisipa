@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 
 class TimestampMixin:
-    """Adaugă coloanele created_at / updated_at, completate de baza de date."""
+    """Adds created_at / updated_at columns, filled in by the database."""
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
