@@ -1,10 +1,14 @@
 from functools import lru_cache
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # Full connection URL (e.g. from Neon or Render). When set, it wins over the POSTGRES_* values.
+    database_url_env: str | None = Field(default=None, validation_alias="DATABASE_URL")
 
     postgres_user: str = "zerorisipa"
     postgres_password: str = "zerorisipa"
@@ -22,6 +26,13 @@ class Settings(BaseSettings):
 
     @property
     def database_url(self) -> str:
+        if self.database_url_env:
+            url = self.database_url_env.strip()
+            # Hosting providers hand out postgres:// or postgresql:// URLs; SQLAlchemy needs the psycopg driver.
+            for prefix in ("postgres://", "postgresql://"):
+                if url.startswith(prefix):
+                    return "postgresql+psycopg://" + url[len(prefix):]
+            return url
         return (
             f"postgresql+psycopg://{self.postgres_user}:{self.postgres_password}"
             f"@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
