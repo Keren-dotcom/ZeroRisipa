@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosClient, { getErrorMessage } from '../api/axiosClient';
+import groceries from '../assets/groceries.jpg';
 import logo from '../assets/logo.png';
 
 export default function Login() {
@@ -33,7 +34,7 @@ export default function Login() {
           <div className="w-full max-w-4xl flex flex-col items-center">
             
             <div className="w-full flex justify-center items-end relative overflow-hidden h-72 md:h-80 select-none">
-              <img alt="Fresh organic groceries" className="w-full h-full object-contain object-bottom pointer-events-none transition-transform duration-700 hover:scale-[1.02]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRqHnMIdKHwZmTDUuaU6sJ2tA1DH45HyBEff4fvAp5pq5WwP0zehBRhs7AF2ZV0FhxCxuRQIrP1pQZvXbRcYcIS5tGlxe0DzdQsIm5TGeoECB9M0NB4U3kaNdvASdBhfzbOF8JFW21SYu_f6y2TjuOh581l6jl0478CLOlsd32tWi_jhy-r2phwLhiNo_GC6Dezs-O_KDRDm7X_y79UxfNex7v5aapygHofyVrByEW" />
+              <img alt="Fresh organic groceries" className="w-full h-full object-contain object-bottom pointer-events-none transition-transform duration-700 hover:scale-[1.02]" src={groceries} />
               <div className="absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-surface-container-lowest to-transparent pointer-events-none"></div>
             </div>
             
