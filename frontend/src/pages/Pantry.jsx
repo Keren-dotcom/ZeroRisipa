@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axiosClient from '../api/axiosClient';
+import axiosClient, { getErrorMessage } from '../api/axiosClient';
+
+// Units used by the backend seed data
+const UNITS = ['pcs', 'g', 'ml', 'clove', 'slice'];
+const EMPTY_FORM = { name: '', quantity: '', unit: 'pcs', expiryDate: '' };
+
+const byExpiry = (a, b) => a.expiry_date.localeCompare(b.expiry_date);
 
 export default function Pantry() {
   const navigate = useNavigate();
@@ -8,69 +14,90 @@ export default function Pantry() {
   const [ingredientsCatalog, setIngredientsCatalog] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  
-  // Form State
-  const [formData, setFormData] = useState({ name: '', quantity: '', unit: 'pcs', expiryDate: '' });
+
+  // Form state
+  const [formData, setFormData] = useState(EMPTY_FORM);
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [catalogRes, pantryRes] = await Promise.all([
+          axiosClient.get('/ingredients', { params: { limit: 100 } }), // backend default is 20
+          axiosClient.get('/pantry'), // already sorted by expiry date
+        ]);
+        setIngredientsCatalog(catalogRes.data);
+        setItems(pantryRes.data);
+        setError('');
+      } catch {
+        setError('Failed to load pantry data.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchData();
   }, []);
 
-const fetchData = async () => {
-    setIsLoading(true);
-    try {
-      const [catalogRes, pantryRes] = await Promise.all([
-        axiosClient.get('/ingredients'),
-        axiosClient.get('/pantry')
-      ]);
-      
-      setIngredientsCatalog(catalogRes.data);
-      
-      // Sort items by expiry date
-      const sortedItems = pantryRes.data.sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate));
-      setItems(sortedItems);
-      setError('');
-    } catch (err) {
-      setError('Failed to load pantry data.');
-    } finally {
-      setIsLoading(false);
-    }
+  const findIngredient = (name) =>
+    ingredientsCatalog.find((ing) => ing.name.toLowerCase() === name.trim().toLowerCase());
+
+  const handleNameChange = (name) => {
+    // Pre-fill the unit with the ingredient's default unit when it's picked from the list
+    const ingredient = findIngredient(name);
+    setFormData({ ...formData, name, unit: ingredient?.default_unit ?? formData.unit });
   };
 
-const handleSubmit = async (e) => {
+  const resetForm = () => {
+    setFormData(EMPTY_FORM);
+    setEditingId(null);
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const ingredient = findIngredient(formData.name);
+    if (!ingredient) {
+      setError('Please pick an ingredient from the list.');
+      return;
+    }
+    const payload = {
+      ingredient_id: ingredient.id,
+      quantity: formData.quantity,
+      unit: formData.unit,
+      expiry_date: formData.expiryDate,
+    };
     try {
       if (editingId) {
-        // Edit existing item
-        await axiosClient.put(`/pantry/${editingId}`, formData);
-        setItems(items.map(item => item.id === editingId ? { ...item, ...formData } : item).sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate)));
-        setEditingId(null);
+        const response = await axiosClient.patch(`/pantry/${editingId}`, payload);
+        setItems((prev) => prev.map((item) => (item.id === editingId ? response.data : item)).sort(byExpiry));
       } else {
-        // Add new ingredients
-        const response = await axiosClient.post('/pantry', formData);
-        const newItem = response.data; // Ensure backend returns the created item
-        setItems([...items, newItem].sort((a, b) => new Date(a.expiryDate) - new Date(b.expiryDate)));
+        const response = await axiosClient.post('/pantry', payload);
+        setItems((prev) => [...prev, response.data].sort(byExpiry));
       }
-      setFormData({ name: '', quantity: '', unit: 'pcs', expiryDate: '' });
+      resetForm();
+      setError('');
     } catch (err) {
-      setError('Failed to save item.');
+      setError(getErrorMessage(err, 'Failed to save item.'));
     }
   };
 
   const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this item?')) { // Delete with confirmation
-      try {
-        await axiosClient.delete(`/pantry/${id}`).catch(() => {});
-        setItems(items.filter(item => item.id !== id));
-      } catch (err) {
-        setError('Failed to delete item.');
-      }
+    if (!window.confirm('Are you sure you want to delete this item?')) return;
+    try {
+      await axiosClient.delete(`/pantry/${id}`);
+      setItems((prev) => prev.filter((item) => item.id !== id));
+      if (editingId === id) resetForm();
+    } catch (err) {
+      setError(getErrorMessage(err, 'Failed to delete item.'));
     }
   };
 
   const handleEdit = (item) => {
-    setFormData({ name: item.name, quantity: item.quantity, unit: item.unit, expiryDate: item.expiryDate });
+    setFormData({
+      name: item.ingredient.name,
+      quantity: item.quantity,
+      unit: item.unit,
+      expiryDate: item.expiry_date,
+    });
     setEditingId(item.id);
   };
 
@@ -79,9 +106,11 @@ const handleSubmit = async (e) => {
     navigate('/login');
   };
 
-  // Helper to highlight items expiring soon (within 3 days)
+  // Highlight items expiring within 3 days (compared by calendar day, in local time)
   const isExpiringSoon = (dateString) => {
-    const daysUntilExpiry = (new Date(dateString) - new Date()) / (1000 * 3600 * 24);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysUntilExpiry = (new Date(`${dateString}T00:00:00`) - today) / (1000 * 3600 * 24);
     return daysUntilExpiry <= 3 && daysUntilExpiry >= 0;
   };
 
@@ -102,31 +131,28 @@ const handleSubmit = async (e) => {
           <form onSubmit={handleSubmit} className="flex flex-col gap-space-sm">
             <div>
               <label className="font-label-md text-on-surface-variant">Ingredient</label>
-              {/* Autocomplete from /ingredients[cite: 3] */}
-              <input list="ingredients-list" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]" placeholder="e.g., Tomatoes" />
+              {/* Autocomplete from GET /ingredients */}
+              <input list="ingredients-list" required value={formData.name} onChange={(e) => handleNameChange(e.target.value)} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]" placeholder="e.g., Tomatoes" />
               <datalist id="ingredients-list">
-                {ingredientsCatalog.map((ing, idx) => <option key={idx} value={ing.name || ing} />)}
+                {ingredientsCatalog.map((ing) => <option key={ing.id} value={ing.name} />)}
               </datalist>
             </div>
 
             <div className="flex gap-space-sm">
               <div className="flex-1">
-                <label className="font-label-md text-on-surface-variant">Quantity</label> {/* Quantity[cite: 3] */}
-                <input type="number" min="1" required value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]" />
+                <label className="font-label-md text-on-surface-variant">Quantity</label>
+                <input type="number" min="0.01" step="any" required value={formData.quantity} onChange={(e) => setFormData({...formData, quantity: e.target.value})} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]" />
               </div>
               <div className="flex-1">
-                <label className="font-label-md text-on-surface-variant">Unit</label> {/* Unit[cite: 3] */}
+                <label className="font-label-md text-on-surface-variant">Unit</label>
                 <select value={formData.unit} onChange={(e) => setFormData({...formData, unit: e.target.value})} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]">
-                  <option value="pcs">pcs</option>
-                  <option value="kg">kg</option>
-                  <option value="grams">grams</option>
-                  <option value="liters">liters</option>
+                  {[...new Set([...UNITS, formData.unit])].map((unit) => <option key={unit} value={unit}>{unit}</option>)}
                 </select>
               </div>
             </div>
 
             <div>
-              <label className="font-label-md text-on-surface-variant">Expiry Date</label> {/* Expiry date[cite: 3] */}
+              <label className="font-label-md text-on-surface-variant">Expiry Date</label>
               <input type="date" required value={formData.expiryDate} onChange={(e) => setFormData({...formData, expiryDate: e.target.value})} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]" />
             </div>
 
@@ -134,7 +160,7 @@ const handleSubmit = async (e) => {
               {editingId ? 'Update Item' : 'Add to Pantry'}
             </button>
             {editingId && (
-              <button type="button" onClick={() => { setEditingId(null); setFormData({ name: '', quantity: '', unit: 'pcs', expiryDate: '' }); }} className="w-full h-10 bg-surface-container-low text-on-surface rounded-full font-label-md hover:bg-surface-variant">
+              <button type="button" onClick={resetForm} className="w-full h-10 bg-surface-container-low text-on-surface rounded-full font-label-md hover:bg-surface-variant">
                 Cancel Edit
               </button>
             )}
@@ -143,29 +169,29 @@ const handleSubmit = async (e) => {
 
         {/* Food List Inventory */}
         <section className="md:col-span-2">
-          {/* Error State[cite: 3] */}
+          {/* Error State */}
           {error && <div className="p-space-md mb-space-md bg-error-container text-on-error-container rounded-lg font-label-md">{error}</div>}
           
-          {/* Loading State[cite: 3] */}
+          {/* Loading State */}
           {isLoading ? (
             <div className="flex justify-center p-margin text-outline">Loading pantry items...</div>
           ) : items.length === 0 ? (
-            /* Empty list state[cite: 3] */
+            /* Empty list state */
             <div className="flex justify-center items-center h-48 bg-surface-container-low rounded-xl border border-dashed border-outline-variant text-on-surface-variant">
               Your pantry is empty. Add some food!
             </div>
           ) : (
             <div className="grid sm:grid-cols-2 gap-space-md">
               {items.map((item) => (
-                <div key={item.id} className={`p-space-md rounded-xl border bg-surface flex flex-col justify-between ${isExpiringSoon(item.expiryDate) ? 'border-error shadow-sm' : 'border-outline-variant'}`}>
+                <div key={item.id} className={`p-space-md rounded-xl border bg-surface flex flex-col justify-between ${isExpiringSoon(item.expiry_date) ? 'border-error shadow-sm' : 'border-outline-variant'}`}>
                   <div>
                     <div className="flex justify-between items-start mb-space-xs">
-                      <h3 className="font-headline-sm text-on-surface">{item.name}</h3>
-                      {/* Highlighting the ones expiring soon[cite: 3] */}
-                      {isExpiringSoon(item.expiryDate) && <span className="text-label-sm text-error bg-error-container px-2 py-0.5 rounded-full">Expiring Soon</span>}
+                      <h3 className="font-headline-sm text-on-surface">{item.ingredient.name}</h3>
+                      {/* Highlighting the ones expiring soon */}
+                      {isExpiringSoon(item.expiry_date) && <span className="text-label-sm text-error bg-error-container px-2 py-0.5 rounded-full">Expiring Soon</span>}
                     </div>
-                    <p className="text-body-sm text-on-surface-variant">{item.quantity} {item.unit}</p>
-                    <p className="text-body-sm text-on-surface-variant mt-1">Expires: <span className="font-semibold">{item.expiryDate}</span></p>
+                    <p className="text-body-sm text-on-surface-variant">{Number(item.quantity)} {item.unit}</p>
+                    <p className="text-body-sm text-on-surface-variant mt-1">Expires: <span className="font-semibold">{item.expiry_date}</span></p>
                   </div>
                   <div className="flex gap-space-sm mt-space-md pt-space-sm border-t border-surface-container-high">
                     <button onClick={() => handleEdit(item)} className="text-label-sm text-primary hover:underline">Edit</button>

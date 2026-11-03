@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axiosClient from '../api/axiosClient';
+import axiosClient, { getErrorMessage } from '../api/axiosClient';
 import logo from '../assets/logo.png';
 
 export default function Register() {
@@ -57,7 +57,7 @@ export default function Register() {
       await axiosClient.post('/auth/register', { email, password });
       navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Email might already exist.');
+      setError(getErrorMessage(err, 'Registration failed. Please try again.'));
     } finally {
       setIsLoading(false);
     }

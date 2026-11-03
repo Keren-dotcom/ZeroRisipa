@@ -1,21 +1,28 @@
-Local Setup Instructions - Zero Waste Pantry Optimizer (Frontend)
+# ZeroRisipa frontend
 
-To run this React project on your local machine, please follow these steps:
+React + Vite + Tailwind CSS. Pages: login, sign up, pantry (add / edit / delete food with expiry dates). Recipes is a placeholder for now.
 
-Prerequisites:
-Make sure you have Node.js and npm installed on your computer.
+## Prerequisites
 
-Step 1: Navigate to the project folder
-Open your terminal (in VS Code or your standard command line) and navigate to the frontend folder:
-cd zeroRisipaVite
+- Node.js 20+ and npm
+- The backend running on http://localhost:8000 (see `backend/README.md`), with the seed loaded so the ingredient list isn't empty
 
-Step 2: Install dependencies
-Run the following command to download all the necessary React, Router, and Axios files:
+## Run locally
+
+```bash
+cd frontend
 npm install
-
-Step 3: Start the development server
-Once the installation is complete, start the local Vite server by running:
+cp .env.example .env   # optional: only if the API isn't on http://localhost:8000
 npm run dev
+```
 
-Step 4: Open the application
-The terminal will provide a local URL. Ctrl+Click on it.
+Open the URL Vite prints (usually http://localhost:5173). The backend already allows this origin for CORS.
+
+## Other commands
+
+- `npm run lint` checks the code with ESLint
+- `npm run build` creates a production build in `dist/`
+
+## How it talks to the API
+
+`src/api/axiosClient.js` sets the base URL from `VITE_API_BASE_URL`, adds the JWT from `localStorage` to every request, and sends you back to `/login` when the API answers 401 (expired or invalid token).

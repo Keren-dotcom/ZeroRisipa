@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axiosClient from '../api/axiosClient';
+import axiosClient, { getErrorMessage } from '../api/axiosClient';
+import logo from '../assets/logo.png';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -14,43 +15,16 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-
     try {
       const response = await axiosClient.post('/auth/login', { email, password });
-      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('token', response.data.access_token);
       navigate('/pantry');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      setError(getErrorMessage(err, 'Invalid email or password'));
     } finally {
       setIsLoading(false);
     }
-  // mock user credentials for testing purposes
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setError('');
-  //   setIsLoading(true);
-
-  //   try {
-  //     // comment out the real backend call
-      
-  //     // Simulate a 1 second network delay to test loading screen
-  //     await new Promise(resolve => setTimeout(resolve, 1000));
-
-  //     if (email === 'test@test.com' && password === 'password123') {
-  //       // Save a fake token to pass the ProtectedRoute check
-  //       localStorage.setItem('token', 'mock_jwt_token_987654321');
-  //       navigate('/pantry');
-  //     } else {
-  //       throw new Error('For testing, use test@test.com and password123');
-  //     }
-
-  //   } catch (err) {
-  //     setError(err.message || err.response?.data?.message || 'Invalid email or password');
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-};
+  };
 
   return (
     <div className="bg-surface-container-lowest text-on-surface font-body-md text-body-md min-h-screen antialiased selection:bg-secondary-container selection:text-on-secondary-container">
@@ -66,9 +40,9 @@ export default function Login() {
             <div className="w-full max-w-md flex flex-col items-center px-space-md md:px-0 pt-space-md pb-space-xl">
               <div className="flex flex-col items-center text-center mb-space-lg">
                 <div className="w-full max-w-xs flex justify-center mb-space-xs">
-                  <img alt="PantryZero - Zero Waste Pantry Optimizer" className="w-full max-h-36 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDD5qzslYFdMM0T-Jn7ZIfqmxVq-bljwuHpd5HQhGnARj8HJhcCvqxATe2fWvCuu7s3x0CRF0YUXudRKqoW9Loi3dnUQ4Vq89AckM5xJqZQ622OJ_-sd7ZuGR4epk4ykdlLfZX4BSjEGwwhbk7yvWVIJoetZerSREAPzBA1PFdrGibp8CA9o2ytH4PlWy-TYC2o6BROGZweVaOOMMv9ofvG8ovJwW0lKRLvS5vDwx44" />
+                  <img alt="PantryZero - Zero Waste Pantry Optimizer" className="w-full max-h-36 object-contain" src={logo} />
                 </div>
-                <p className="font-body-sm text-body-sm text-[#1b4332] tracking-wide font-semibold">Nimic nu se pierde, totul se transformă</p>
+                <p className="font-body-sm text-body-sm text-[#1b4332] tracking-wide font-semibold">Nothing is lost, everything is transformed</p>
               </div>
               
               {error && <p className="text-red-600 mb-4 font-semibold">{error}</p>}
