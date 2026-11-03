@@ -29,8 +29,10 @@ def _get_own_item(db: Session, item_id: int, user: User) -> PantryItem:
     return item
 
 
-def _check_ingredient(db: Session, ingredient_id: int) -> None:
-    if db.get(Ingredient, ingredient_id) is None:
+def _check_ingredient(db: Session, ingredient_id: int, user: User) -> None:
+    """The ingredient must be in the shared catalogue or in the user's own catalogue."""
+    ingredient = db.get(Ingredient, ingredient_id)
+    if ingredient is None or ingredient.owner_id not in (None, user.id):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Ingredient not found in the catalogue",
@@ -65,7 +67,7 @@ def create_pantry_item(
     user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> PantryItem:
-    _check_ingredient(db, data.ingredient_id)
+    _check_ingredient(db, data.ingredient_id, user)
     item = PantryItem(user_id=user.id, **data.model_dump())
     db.add(item)
     db.commit()
@@ -90,7 +92,7 @@ def update_pantry_item(
     item = _get_own_item(db, item_id, user)
     changes = data.model_dump(exclude_unset=True, exclude_none=True)
     if "ingredient_id" in changes:
-        _check_ingredient(db, changes["ingredient_id"])
+        _check_ingredient(db, changes["ingredient_id"], user)
     for field, value in changes.items():
         setattr(item, field, value)
     db.commit()

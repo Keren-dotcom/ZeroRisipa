@@ -1,6 +1,9 @@
 from datetime import date, timedelta
 
 from fastapi.testclient import TestClient
+from sqlalchemy.orm import Session
+
+from app.models import Ingredient
 
 
 def auth_headers(client: TestClient, email: str) -> dict[str, str]:
@@ -36,8 +39,8 @@ def test_ingredients_search(client: TestClient) -> None:
     headers = auth_headers(client, "ana@example.com")
     for name in ["Milk", "coconut milk", "carrot"]:
         create_ingredient(client, headers, name)
-    names = [i["name"] for i in client.get("/ingredients", params={"q": "MIL"}).json()]
-    assert names == ["coconut milk", "milk"]
+    found = client.get("/ingredients", params={"q": "MIL"}, headers=headers).json()
+    assert [i["name"] for i in found] == ["coconut milk", "milk"]
     duplicate = client.post(
         "/ingredients", json={"name": "MILK", "default_unit": "ml"}, headers=headers
     )
@@ -93,3 +96,57 @@ def test_users_cannot_touch_each_others_pantry(client: TestClient) -> None:
     assert client.delete(f"/pantry/{item_id}", headers=ion).status_code == 404
     # Ana's item was left untouched.
     assert client.get(f"/pantry/{item_id}", headers=ana).json()["unit"] == "g"
+
+
+def add_shared_ingredient(db_session: Session, name: str) -> int:
+    ingredient = Ingredient(name=name, default_unit="g")
+    db_session.add(ingredient)
+    db_session.flush()
+    return ingredient.id
+
+
+def test_custom_ingredients_are_private(client: TestClient, db_session: Session) -> None:
+    add_shared_ingredient(db_session, "rice")
+    ana = auth_headers(client, "ana@example.com")
+    ion = auth_headers(client, "ion@example.com")
+    create_ingredient(client, ana, "kimchi")
+
+    def names(headers=None) -> dict[str, bool]:
+        response = client.get("/ingredients", headers=headers or {})
+        return {i["name"]: i["is_custom"] for i in response.json()}
+
+    assert names(ana) == {"kimchi": True, "rice": False}
+    assert names(ion) == {"rice": False}
+    assert names() == {"rice": False}
+
+
+def test_custom_ingredient_name_rules(client: TestClient, db_session: Session) -> None:
+    add_shared_ingredient(db_session, "rice")
+    ana = auth_headers(client, "ana@example.com")
+    ion = auth_headers(client, "ion@example.com")
+
+    shared = client.post("/ingredients", json={"name": "Rice", "default_unit": "g"}, headers=ana)
+    assert shared.status_code == 409
+    assert "shared" in shared.json()["detail"]
+
+    # The same custom name is fine for two different users, but not twice for one.
+    create_ingredient(client, ana, "kimchi")
+    create_ingredient(client, ion, "kimchi")
+    again = client.post("/ingredients", json={"name": "kimchi", "default_unit": "g"}, headers=ana)
+    assert again.status_code == 409
+    assert "your catalogue" in again.json()["detail"]
+
+
+def test_pantry_only_accepts_visible_ingredients(client: TestClient, db_session: Session) -> None:
+    rice = add_shared_ingredient(db_session, "rice")
+    ana = auth_headers(client, "ana@example.com")
+    ion = auth_headers(client, "ion@example.com")
+    kimchi = create_ingredient(client, ana, "kimchi")
+
+    assert add_item(client, ana, kimchi, days=3).status_code == 201
+    assert add_item(client, ion, rice, days=3).status_code == 201
+    # Ion can't use Ana's private ingredient, neither when adding nor when editing.
+    assert add_item(client, ion, kimchi, days=3).status_code == 422
+    item_id = add_item(client, ion, rice, days=3).json()["id"]
+    edit = client.patch(f"/pantry/{item_id}", json={"ingredient_id": kimchi}, headers=ion)
+    assert edit.status_code == 422

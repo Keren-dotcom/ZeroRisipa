@@ -102,12 +102,14 @@ The token expires after `ACCESS_TOKEN_EXPIRE_MINUTES` (60 by default). The signi
 
 ## Pantry and food catalogue
 
-Every `/pantry` endpoint requires login. Each user only sees and changes their own items; someone else's item returns 404.
+The catalogue has two parts: the **shared catalogue**, loaded by the seed and visible to everyone, and each user's **own ingredients**, which only that user can see and use.
+
+Every `/pantry` endpoint requires login. Each user only sees and changes their own items; someone else's item returns 404. A pantry item can use an ingredient from the shared catalogue or from your own catalogue.
 
 | Endpoint | What it does |
 |---|---|
-| `GET /ingredients?q=mil` | searches the catalogue by name (for autocomplete); no login needed |
-| `POST /ingredients` | adds a food to the catalogue: `{"name", "default_unit", "category"?}`; requires login |
+| `GET /ingredients?q=mil` | searches by name (for autocomplete): the shared catalogue plus, when logged in, your own ingredients; each result has `is_custom` |
+| `POST /ingredients` | adds an ingredient to your own catalogue: `{"name", "default_unit", "category"?}`; requires login; 409 if the name is already in the shared catalogue or in yours |
 | `GET /pantry` | your pantry; `sort=expiry_date` (default), `-expiry_date`, `created_at`, `-created_at`; `expiring_within_days=N` keeps only what expires soon |
 | `POST /pantry` | `{"ingredient_id", "quantity", "unit", "expiry_date"}` |
 | `GET /pantry/{id}` | one pantry item |
