@@ -13,13 +13,13 @@ def get_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
     db: Session = Depends(get_db),
 ) -> User:
-    """Dependency pentru endpoint-urile care necesită login.
+    """Dependency for endpoints that require login.
 
-    Folosire: `user: User = Depends(get_current_user)`.
+    Usage: `user: User = Depends(get_current_user)`.
     """
     unauthorized = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Nu ești autentificat sau tokenul a expirat",
+        detail="Not authenticated or the token has expired",
         headers={"WWW-Authenticate": "Bearer"},
     )
     if credentials is None:
@@ -31,3 +31,17 @@ def get_current_user(
     if user is None or not user.is_active:
         raise unauthorized
     return user
+
+
+def get_optional_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+    db: Session = Depends(get_db),
+) -> User | None:
+    """Like `get_current_user`, but returns None instead of 401 when there is no valid token."""
+    if credentials is None:
+        return None
+    user_id = decode_access_token(credentials.credentials)
+    if user_id is None:
+        return None
+    user = db.get(User, user_id)
+    return user if user is not None and user.is_active else None

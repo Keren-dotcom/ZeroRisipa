@@ -1,7 +1,7 @@
 from sqlalchemy import MetaData
 from sqlalchemy.orm import DeclarativeBase
 
-# Nume previzibile pentru constrângeri, ca migrațiile să fie stabile.
+# Predictable constraint names, so migrations stay stable.
 NAMING_CONVENTION = {
     "ix": "ix_%(column_0_label)s",
     "uq": "uq_%(table_name)s_%(column_0_name)s",
@@ -12,6 +12,6 @@ NAMING_CONVENTION = {
 
 
 class Base(DeclarativeBase):
-    """Clasa de bază pentru toate modelele SQLAlchemy."""
+    """Base class for all SQLAlchemy models."""
 
     metadata = MetaData(naming_convention=NAMING_CONVENTION)

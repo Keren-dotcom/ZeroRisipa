@@ -22,7 +22,7 @@ def create_access_token(user_id: int) -> str:
 
 
 def decode_access_token(token: str) -> int | None:
-    """Returnează id-ul utilizatorului din token, sau None dacă tokenul e invalid/expirat."""
+    """Return the user id from the token, or None if the token is invalid or expired."""
     settings = get_settings()
     try:
         payload = jwt.decode(

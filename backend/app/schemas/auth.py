@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
-# bcrypt folosește doar primii 72 de bytes din parolă.
+# bcrypt only uses the first 72 bytes of the password.
 PASSWORD_MIN_LENGTH = 8
 PASSWORD_MAX_LENGTH = 72
 

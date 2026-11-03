@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
 
 class Recipe(TimestampMixin, Base):
-    """Rețetă predefinită din baza internă."""
+    """Predefined recipe from the internal database."""
 
     __tablename__ = "recipes"
     __table_args__ = (
@@ -33,7 +33,7 @@ class Recipe(TimestampMixin, Base):
 
 
 class RecipeIngredient(Base):
-    """Legătura rețetă–ingredient, cu cantitatea necesară."""
+    """Recipe–ingredient link, with the required quantity."""
 
     __tablename__ = "recipe_ingredients"
     __table_args__ = (CheckConstraint("quantity > 0", name="quantity_positive"),)
