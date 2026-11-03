@@ -158,4 +158,4 @@ export default function Register() {
       </main>
     </div>
   );
-}
+}
