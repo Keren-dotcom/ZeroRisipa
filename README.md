@@ -4,4 +4,4 @@ An app that reduces food waste: a pantry with expiry dates and meal plans that u
 
 - `backend/` – FastAPI + PostgreSQL API (see backend/README.md)
 
-Deployment (free plans: Vercel + Render + Neon): see [docs/DEPLOY.md](docs/DEPLOY.md).
+Deployment (free plans on Render + Neon): see [docs/DEPLOY.md](docs/DEPLOY.md).
