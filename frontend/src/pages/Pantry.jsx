@@ -52,20 +52,41 @@ export default function Pantry() {
     setEditingId(null);
   };
 
+  // Returns the catalogue ingredient with this name, creating it in the user's own
+  // catalogue (POST /ingredients) when it isn't in the list yet.
+  const resolveIngredient = async (name) => {
+    const known = findIngredient(name);
+    if (known) return known;
+    try {
+      const response = await axiosClient.post('/ingredients', {
+        name: name.trim(),
+        default_unit: formData.unit,
+      });
+      setIngredientsCatalog((prev) =>
+        [...prev, response.data].sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      return response.data;
+    } catch (err) {
+      // 409: it already exists but wasn't in the loaded list, so look it up by name
+      if (err.response?.status !== 409) throw err;
+      const { data } = await axiosClient.get('/ingredients', { params: { q: name.trim(), limit: 100 } });
+      const match = data.find((ing) => ing.name.toLowerCase() === name.trim().toLowerCase());
+      if (!match) throw err;
+      setIngredientsCatalog((prev) => [...prev, match]);
+      return match;
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const ingredient = findIngredient(formData.name);
-    if (!ingredient) {
-      setError('Please pick an ingredient from the list.');
-      return;
-    }
-    const payload = {
-      ingredient_id: ingredient.id,
-      quantity: formData.quantity,
-      unit: formData.unit,
-      expiry_date: formData.expiryDate,
-    };
     try {
+      const ingredient = await resolveIngredient(formData.name);
+      const payload = {
+        ingredient_id: ingredient.id,
+        quantity: formData.quantity,
+        unit: formData.unit,
+        expiry_date: formData.expiryDate,
+      };
       if (editingId) {
         const response = await axiosClient.patch(`/pantry/${editingId}`, payload);
         setItems((prev) => prev.map((item) => (item.id === editingId ? response.data : item)).sort(byExpiry));
@@ -131,11 +152,14 @@ export default function Pantry() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-space-sm">
             <div>
               <label className="font-label-md text-on-surface-variant">Ingredient</label>
-              {/* Autocomplete from GET /ingredients */}
-              <input list="ingredients-list" required value={formData.name} onChange={(e) => handleNameChange(e.target.value)} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]" placeholder="e.g., Tomatoes" />
+              {/* Autocomplete from GET /ingredients; a new name is added to the user's own catalogue */}
+              <input list="ingredients-list" required maxLength={100} value={formData.name} onChange={(e) => handleNameChange(e.target.value)} className="w-full h-10 px-3 mt-1 bg-surface-container-low rounded-lg outline-none focus:shadow-[0_0_0_2px_#006b2c]" placeholder="e.g., Tomatoes" />
               <datalist id="ingredients-list">
-                {ingredientsCatalog.map((ing) => <option key={ing.id} value={ing.name} />)}
+                {ingredientsCatalog.map((ing) => <option key={ing.id} value={ing.name} label={ing.is_custom ? 'my ingredient' : undefined} />)}
               </datalist>
+              {formData.name.trim() && !findIngredient(formData.name) && (
+                <p className="text-label-sm text-on-surface-variant mt-1">New ingredient: it will be added to your own catalogue.</p>
+              )}
             </div>
 
             <div className="flex gap-space-sm">
