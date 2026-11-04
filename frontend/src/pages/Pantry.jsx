@@ -2,8 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient, { getErrorMessage } from '../api/axiosClient';
 
-// Units used by the backend seed data
-const UNITS = ['pcs', 'g', 'ml', 'clove', 'slice'];
+// Units offered in the form (the seed data uses pcs, g, ml, clove, slice)
+const UNITS = ['pcs', 'g', 'kg', 'ml', 'clove', 'slice'];
 const EMPTY_FORM = { name: '', quantity: '', unit: 'pcs', expiryDate: '' };
 
 const byExpiry = (a, b) => a.expiry_date.localeCompare(b.expiry_date);
