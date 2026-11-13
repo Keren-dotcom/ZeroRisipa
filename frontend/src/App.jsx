@@ -4,6 +4,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Pantry from './pages/Pantry';
 import Recipes from './pages/Recipes';
+import RecipeDetail from './pages/RecipeDetail';
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token');
@@ -35,6 +36,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <Recipes />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/recipes/:id" 
+          element={
+            <ProtectedRoute>
+              <RecipeDetail />
             </ProtectedRoute>
           } 
         />

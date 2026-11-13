@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axiosClient, { getErrorMessage } from '../api/axiosClient';
+import { isExpiringSoon } from '../utils/pantry';
 
 // Units offered in the form (the seed data uses pcs, g, ml, clove, slice)
 const UNITS = ['pcs', 'g', 'kg', 'ml', 'clove', 'slice'];
@@ -127,21 +128,18 @@ export default function Pantry() {
     navigate('/login');
   };
 
-  // Highlight items expiring within 3 days (compared by calendar day, in local time)
-  const isExpiringSoon = (dateString) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const daysUntilExpiry = (new Date(`${dateString}T00:00:00`) - today) / (1000 * 3600 * 24);
-    return daysUntilExpiry <= 3 && daysUntilExpiry >= 0;
-  };
-
   return (
     <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body-md py-margin-sm px-gutter-sm md:px-gutter">
       <header className="max-w-5xl mx-auto flex justify-between items-center mb-space-xl">
         <h1 className="font-headline-xl text-headline-xl text-primary">My Pantry</h1>
-        <button onClick={handleLogout} className="px-space-md py-space-sm bg-surface-container-low text-on-surface rounded-full hover:bg-surface-variant transition-colors font-label-md">
-          Logout
-        </button>
+        <div className="flex gap-space-sm">
+          <Link to="/recipes" className="px-space-md py-space-sm bg-primary text-on-primary rounded-full hover:bg-primary-container transition-colors font-label-md">
+            Recipes
+          </Link>
+          <button onClick={handleLogout} className="px-space-md py-space-sm bg-surface-container-low text-on-surface rounded-full hover:bg-surface-variant transition-colors font-label-md">
+            Logout
+          </button>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto grid md:grid-cols-3 gap-space-xl">

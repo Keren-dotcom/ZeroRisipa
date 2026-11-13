@@ -16,12 +16,17 @@ def list_recipes(
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ) -> RecipePage:
-    """Predefined recipes, in alphabetical order, paginated."""
+    """Predefined recipes with their ingredients, in alphabetical order, paginated."""
     stmt = select(Recipe)
     if q:
         stmt = stmt.where(Recipe.name.ilike(f"%{q.strip()}%"))
     total = db.scalar(select(func.count()).select_from(stmt.subquery()))
-    items = db.scalars(stmt.order_by(Recipe.name, Recipe.id).limit(limit).offset(offset)).all()
+    items = db.scalars(
+        stmt.order_by(Recipe.name, Recipe.id)
+        .limit(limit)
+        .offset(offset)
+        .options(selectinload(Recipe.ingredients).joinedload(RecipeIngredient.ingredient))
+    ).all()
     return RecipePage(items=items, total=total, limit=limit, offset=offset)
 
 

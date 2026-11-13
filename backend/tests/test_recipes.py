@@ -36,6 +36,9 @@ def test_list_and_detail(client: TestClient, db_session: Session) -> None:
     assert len(page["items"]) == 5
     names = [r["name"] for r in page["items"]]
     assert names == sorted(names)
+    # The list includes each recipe's ingredients, so the app can match them with the pantry.
+    assert all(r["ingredients"] for r in page["items"])
+    assert {"ingredient", "quantity", "unit"} <= set(page["items"][0]["ingredients"][0])
 
     second = client.get("/recipes", params={"limit": 5, "offset": 5}).json()
     assert not set(names) & {r["name"] for r in second["items"]}

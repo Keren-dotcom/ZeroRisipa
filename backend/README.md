@@ -120,7 +120,7 @@ Every `/pantry` endpoint requires login. Each user only sees and changes their o
 
 | Endpoint | What it does |
 |---|---|
-| `GET /recipes?limit=20&offset=0&q=...` | list of recipes, alphabetical: `{"items", "total", "limit", "offset"}` |
+| `GET /recipes?limit=20&offset=0&q=...` | list of recipes with their ingredients, alphabetical: `{"items", "total", "limit", "offset"}` |
 | `GET /recipes/{id}` | the recipe with instructions and ingredients (quantity + unit) |
 
 To add or change recipes, edit `seed/recipes.json` and run `python -m app.seed` again. Every ingredient in a recipe must exist in `seed/ingredients.json` (names are compared case-insensitively); otherwise the script stops and tells you what is missing.

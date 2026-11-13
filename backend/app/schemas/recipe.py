@@ -21,11 +21,12 @@ class RecipeSummary(BaseModel):
     description: str | None
     servings: int
     prep_time_minutes: int
+    # Included in the list too, so the app can compare recipes with the pantry.
+    ingredients: list[RecipeIngredientRead]
 
 
 class RecipeRead(RecipeSummary):
     instructions: str
-    ingredients: list[RecipeIngredientRead]
 
 
 class RecipePage(BaseModel):

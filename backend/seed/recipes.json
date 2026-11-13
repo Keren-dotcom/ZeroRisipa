@@ -186,5 +186,106 @@
       {"name": "butter", "quantity": 15, "unit": "g"},
       {"name": "eggs", "quantity": 2, "unit": "pcs"}
     ]
+  },
+  {
+    "name": "Zucchini fritters",
+    "description": "Crispy fritters for a zucchini that is going soft.",
+    "instructions": "1. Grate the zucchini, salt it and squeeze out the water after 10 minutes.\n2. Mix it with the eggs, flour and chopped dill.\n3. Fry spoonfuls of the mixture in oil, 2-3 minutes on each side.",
+    "servings": 3,
+    "prep_time_minutes": 30,
+    "ingredients": [
+      {"name": "zucchini", "quantity": 2, "unit": "pcs"},
+      {"name": "eggs", "quantity": 2, "unit": "pcs"},
+      {"name": "flour", "quantity": 80, "unit": "g"},
+      {"name": "dill", "quantity": 10, "unit": "g"},
+      {"name": "oil", "quantity": 40, "unit": "ml"},
+      {"name": "salt", "quantity": 3, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Banana yogurt smoothie",
+    "description": "Two-minute breakfast for bananas with brown spots and yogurt near its date.",
+    "instructions": "1. Peel and slice the bananas.\n2. Blend them with the yogurt and milk until smooth.\n3. Serve cold.",
+    "servings": 2,
+    "prep_time_minutes": 5,
+    "ingredients": [
+      {"name": "bananas", "quantity": 2, "unit": "pcs"},
+      {"name": "yogurt", "quantity": 200, "unit": "g"},
+      {"name": "milk", "quantity": 200, "unit": "ml"}
+    ]
+  },
+  {
+    "name": "Mushroom risotto",
+    "description": "Creamy rice that uses up mushrooms and the last bit of cheese.",
+    "instructions": "1. Sauté the chopped onion and garlic in butter.\n2. Add the sliced mushrooms and cook until they release their water.\n3. Add the rice, then hot water a ladle at a time, stirring, for about 18 minutes.\n4. Stir in the grated cheese and season with salt.",
+    "servings": 3,
+    "prep_time_minutes": 35,
+    "ingredients": [
+      {"name": "rice", "quantity": 250, "unit": "g"},
+      {"name": "mushrooms", "quantity": 300, "unit": "g"},
+      {"name": "onion", "quantity": 1, "unit": "pcs"},
+      {"name": "garlic", "quantity": 2, "unit": "clove"},
+      {"name": "butter", "quantity": 30, "unit": "g"},
+      {"name": "cheddar cheese", "quantity": 50, "unit": "g"},
+      {"name": "salt", "quantity": 3, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Chicken salad",
+    "description": "Light lunch for lettuce and cucumber that won't last much longer.",
+    "instructions": "1. Season the chicken breast with salt and cook it in a pan, then slice it.\n2. Tear the lettuce and chop the cucumber and tomatoes.\n3. Mix everything and dress with oil and lemon juice.",
+    "servings": 2,
+    "prep_time_minutes": 25,
+    "ingredients": [
+      {"name": "chicken breast", "quantity": 300, "unit": "g"},
+      {"name": "lettuce", "quantity": 1, "unit": "pcs"},
+      {"name": "cucumber", "quantity": 1, "unit": "pcs"},
+      {"name": "tomatoes", "quantity": 2, "unit": "pcs"},
+      {"name": "lemon", "quantity": 0.5, "unit": "pcs"},
+      {"name": "oil", "quantity": 20, "unit": "ml"},
+      {"name": "salt", "quantity": 2, "unit": "g"}
+    ]
+  },
+  {
+    "name": "Spinach and feta pasta",
+    "description": "Fast dinner for spinach and an opened pack of feta.",
+    "instructions": "1. Boil the pasta in salted water.\n2. Sauté the garlic in oil, then add the spinach until it wilts.\n3. Mix in the drained pasta and the crumbled feta.",
+    "servings": 2,
+    "prep_time_minutes": 20,
+    "ingredients": [
+      {"name": "pasta", "quantity": 200, "unit": "g"},
+      {"name": "spinach", "quantity": 150, "unit": "g"},
+      {"name": "feta cheese", "quantity": 100, "unit": "g"},
+      {"name": "garlic", "quantity": 2, "unit": "clove"},
+      {"name": "oil", "quantity": 20, "unit": "ml"}
+    ]
+  },
+  {
+    "name": "Mashed potatoes",
+    "description": "Simple side dish for potatoes that are starting to sprout and milk near its date.",
+    "instructions": "1. Peel the potatoes and boil them in salted water for 20 minutes.\n2. Drain and mash them with the butter.\n3. Add the warm milk gradually and season with salt.",
+    "servings": 4,
+    "prep_time_minutes": 30,
+    "ingredients": [
+      {"name": "potatoes", "quantity": 1000, "unit": "g"},
+      {"name": "milk", "quantity": 150, "unit": "ml"},
+      {"name": "butter", "quantity": 40, "unit": "g"},
+      {"name": "salt", "quantity": 4, "unit": "g"}
+    ]
+  },
+  {
+    "name": "French toast with apples",
+    "description": "Turns stale bread and soft apples into a sweet breakfast.",
+    "instructions": "1. Whisk the eggs with the milk and a little sugar.\n2. Dip the bread slices and fry them in butter until golden.\n3. Cook the sliced apples with the remaining sugar for 5 minutes and serve on top.",
+    "servings": 2,
+    "prep_time_minutes": 20,
+    "ingredients": [
+      {"name": "bread", "quantity": 4, "unit": "slice"},
+      {"name": "eggs", "quantity": 2, "unit": "pcs"},
+      {"name": "milk", "quantity": 100, "unit": "ml"},
+      {"name": "apples", "quantity": 2, "unit": "pcs"},
+      {"name": "sugar", "quantity": 20, "unit": "g"},
+      {"name": "butter", "quantity": 20, "unit": "g"}
+    ]
   }
 ]
