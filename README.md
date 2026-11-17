@@ -35,11 +35,14 @@ Planned:
 ├── backend/    # FastAPI API, database models, migrations, seed data, tests
 ├── frontend/   # React + Vite single-page app
 └── docs/
+    ├── TUTORIAL.md # step-by-step guide for new developers
     ├── ERD.md      # database diagram and design decisions
     └── postman/    # Postman collection and environment for the API
 ```
 
 ## Quick start
+
+New to the project? Follow the step-by-step [developer tutorial](docs/TUTORIAL.md) instead: it explains each step, how to check it worked, and how to open your first pull request.
 
 You need Python 3.11+, Node.js 20+ and Docker.
 
