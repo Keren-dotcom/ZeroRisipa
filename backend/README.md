@@ -8,12 +8,17 @@ The ZeroRisipa API: Python + FastAPI, PostgreSQL, SQLAlchemy 2 and Alembic for m
 backend/
 ├── app/
 │   ├── main.py          # FastAPI app (CORS, routers)
-│   ├── core/config.py   # settings read from .env
+│   ├── core/
+│   │   ├── config.py    # settings read from .env
+│   │   ├── security.py  # password hashing (bcrypt) and JWT tokens
+│   │   └── deps.py      # FastAPI dependencies, e.g. get_current_user
 │   ├── db/              # engine, session, Base for models
 │   ├── models/          # SQLAlchemy models (tables)
 │   ├── schemas/         # Pydantic schemas (request/response)
 │   ├── routers/         # endpoints, one file per resource
-│   └── services/        # business logic
+│   ├── services/        # business logic (empty for now; the meal planner goes here)
+│   └── seed.py          # loads the seed data: python -m app.seed
+├── seed/                # ingredients.json and recipes.json
 ├── alembic/             # migrations
 ├── tests/               # PyTest tests
 ├── docker-compose.yml   # local PostgreSQL

@@ -1,6 +1,25 @@
 # ZeroRisipa frontend
 
-React + Vite + Tailwind CSS. Pages: login, sign up, pantry (add / edit / delete food with expiry dates). Recipes is a placeholder for now.
+React + Vite + Tailwind CSS.
+
+## Pages
+
+- **Login** and **Sign up** (`/login`, `/register`)
+- **Pantry** (`/pantry`): add, edit and delete food with quantity, unit and expiry date. Items are sorted by expiry date, and the ones that expire within 3 days are highlighted. The ingredient name field suggests names from the catalogue; if you type a name that isn't there, the ingredient is added to your own catalogue (`POST /ingredients`) when you save. Units: `pcs`, `g`, `kg`, `ml`, `clove`, `slice`.
+- **Recipes** (`/recipes`): a placeholder for now.
+
+Pantry and Recipes need you to be logged in; otherwise you are sent to `/login`.
+
+## Structure
+
+```
+src/
+├── api/axiosClient.js   # Axios instance for the backend
+├── pages/               # one component per page
+├── assets/              # images
+├── App.jsx              # routes
+└── main.jsx             # entry point
+```
 
 ## Prerequisites
 
