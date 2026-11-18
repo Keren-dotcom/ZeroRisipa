@@ -44,7 +44,7 @@ Planned:
 
 New to the project? Follow the step-by-step [developer tutorial](docs/TUTORIAL.md) instead: it explains each step, how to check it worked, and how to open your first pull request.
 
-You need Python 3.11+, Node.js 20+ and Docker.
+You need Python 3.11 to 3.13 (3.12 recommended), Node.js 20+ and Docker. Don't have a matching Python? Run the backend in Docker with `docker compose up -d --build` instead; see [backend/README.md](backend/README.md#option-a-everything-in-docker-recommended-if-your-python-version-differs).
 
 1. **Backend** (in a first terminal, from `backend/`):
 
