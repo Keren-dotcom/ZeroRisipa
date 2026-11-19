@@ -21,7 +21,9 @@ backend/
 ├── seed/                # ingredients.json and recipes.json
 ├── alembic/             # migrations
 ├── tests/               # PyTest tests
-├── docker-compose.yml   # local PostgreSQL
+├── Dockerfile           # the API image (Python 3.12)
+├── docker-compose.yml   # PostgreSQL (`db`) and, optionally, the API (`api`)
+├── .python-version      # Python version for pyenv/uv (3.12)
 └── .env.example         # template for .env
 ```
 
@@ -31,10 +33,35 @@ Tables: `users`, `ingredients`, `pantry_items`, `recipes`, `recipe_ingredients`.
 
 ## Requirements
 
-- Python 3.11+
-- Docker + Docker Compose (for PostgreSQL)
+- Docker + Docker Compose
+- Python **3.11, 3.12 or 3.13** if you run the API on your computer (option B). 3.12 is the team's reference version. Python 3.14 does not work yet: some pinned packages (e.g. `psycopg-binary==3.2.9`) have no 3.14 builds, so `pip install` fails.
 
-## Running locally
+You can run the API in two ways. Both use the same `.env` and the same database.
+
+## Option A: everything in Docker (recommended if your Python version differs)
+
+From the `backend/` folder:
+
+```bash
+cp .env.example .env
+docker compose up -d --build
+```
+
+This starts PostgreSQL and the API with Python 3.12, whatever Python you have installed. On every start the `api` container applies the migrations (`alembic upgrade head`) and loads the seed data, then runs the API with `--reload` on http://localhost:8000. Your code is mounted into the container, so saved changes restart the server without a rebuild.
+
+Don't edit `.env` for Docker: inside the container `POSTGRES_HOST` and `POSTGRES_PORT` are set to the `db` service automatically.
+
+| What | Command |
+|---|---|
+| See the API logs | `docker compose logs -f api` |
+| Rebuild after changing `requirements.txt` | `docker compose up -d --build` |
+| Run a command in the container | `docker compose exec api alembic upgrade head` |
+| Run the tests | `docker compose exec api pytest` |
+| Stop everything (data is kept) | `docker compose down` |
+
+If port 8000 is taken, set `API_PORT=8001` in `.env`.
+
+## Option B: running the API on your computer
 
 Run every command from the `backend/` folder.
 
@@ -156,4 +183,5 @@ The collection with every endpoint and its tests is in [docs/postman](../docs/po
 ## Common problems
 
 - **Port 5432 is taken** (you already have Postgres installed): change `POSTGRES_PORT` in `.env`, for example to `5433`, then run `docker compose up -d db` again.
+- **`pip install` fails** (often while building `psycopg-binary` or `pydantic-core`): your Python is probably 3.14 or newer. Use Python 3.12 (see `.python-version`) or option A. Don't change `.env` to work around it: `.env` only holds settings, not the Python version.
 - **`/health` returns 503**: the `db` container isn't running or the values in `.env` don't match. Check with `docker compose ps`.

@@ -23,7 +23,7 @@ Plan for about 45 minutes the first time.
 | Tool | Version | Check with |
 |---|---|---|
 | Git | any recent | `git --version` |
-| Python | 3.11 or newer | `python --version` (on macOS/Linux it may be `python3`) |
+| Python | 3.11 to 3.13 (3.12 recommended; 3.14 doesn't work yet) | `python --version` (on macOS/Linux it may be `python3`) |
 | Node.js + npm | Node 20 or newer | `node --version`, `npm --version` |
 | Docker Desktop | any recent | `docker --version`, `docker compose version` |
 | An editor | e.g. VS Code | |
@@ -273,4 +273,5 @@ Once everything is set up, a normal day is:
 | The ingredient suggestions are empty | The seed wasn't loaded. Run `python -m app.seed`. |
 | The frontend shows network or CORS errors | The API isn't running on http://localhost:8000, or your frontend runs on a port other than 5173/3000. Add it to `CORS_ORIGINS` in `backend/.env` and restart the API. |
 | You keep getting sent back to the login page | Your token expired (after 60 minutes by default). Log in again. |
+| `pip install` fails with build errors | Your Python is probably 3.14. Install Python 3.12, or run the whole backend in Docker: `docker compose up -d --build` from `backend/` (see [backend/README.md](../backend/README.md)). |
 | `relation ... does not exist` errors after a `git pull` | A teammate added a migration. Run `alembic upgrade head`. |
