@@ -136,13 +136,14 @@ export default function Pantry() {
   };
 
   return (
-    <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body-md py-margin-sm px-gutter-sm md:px-gutter">
-      <header className="max-w-5xl mx-auto flex justify-between items-center mb-space-xl">
-        <h1 className="font-headline-xl text-headline-xl text-primary">My Pantry</h1>
-        <button onClick={handleLogout} className="px-space-md py-space-sm bg-surface-container-low text-on-surface rounded-full hover:bg-surface-variant transition-colors font-label-md">
-          Logout
-        </button>
-      </header>
+      <div className="min-h-screen bg-surface-container-lowest text-on-surface font-body-md py-margin-sm px-gutter-sm md:px-gutter">
+          <header className="max-w-5xl mx-auto flex justify-between items-center mb-space-xl">
+              <h1 className="font-headline-xl text-headline-xl text-primary">My Pantry</h1>
+              <div className="flex gap-space-sm">
+                  <button onClick={() => navigate('/recipes')} className="...">Recipes</button>
+                  <button onClick={handleLogout} className="...">Logout</button>
+              </div>
+          </header>
 
       <main className="max-w-5xl mx-auto grid md:grid-cols-3 gap-space-xl">
         {/* Add/Edit Food Form */}
