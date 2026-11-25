@@ -14,8 +14,18 @@ const requestRecipes = () =>
         throw new Error('GET /recipes did not return a list of recipes');
     });
 
-// Adjust prep_time / cook_time if your backend uses other field names
-const totalTime = (recipe) => (recipe.prep_time ?? 0) + (recipe.cook_time ?? 0);
+// Converts a value to a number (the API may send "10" as a string or Decimal); anything invalid becomes 0
+const toMinutes = (value) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+};
+
+// Reads the first field name that exists, so a different naming (prepTime, prep_time_minutes...) still works
+const prepTime = (recipe) =>
+    toMinutes(recipe.prep_time ?? recipe.prepTime ?? recipe.prep_time_minutes ?? recipe.prep_time_min);
+const cookTime = (recipe) =>
+    toMinutes(recipe.cook_time ?? recipe.cookTime ?? recipe.cook_time_minutes ?? recipe.cook_time_min);
+const totalTime = (recipe) => prepTime(recipe) + cookTime(recipe);
 
 export default function Recipes() {
     // Nothing is loaded or shown until the button is pressed
@@ -27,7 +37,9 @@ export default function Recipes() {
     const handleGenerate = async () => {
         setIsGenerating(true);
         try {
-            setRecipes(await requestRecipes());
+            const list = await requestRecipes();
+            console.log('GET /recipes ->', list[0]); // check here which time fields the backend really sends
+            setRecipes(list);
             setGenerated(true);
             setError('');
         } catch (err) {
@@ -83,7 +95,13 @@ export default function Recipes() {
                             >
                                 <h3 className="font-headline-sm text-on-surface mb-space-sm">{recipe.title}</h3>
                                 <p className="text-body-sm text-on-surface-variant">{recipe.description}</p>
-                                <p className="text-label-sm text-primary mt-space-sm">{totalTime(recipe)} min total</p>
+                                {totalTime(recipe) > 0 && (
+                                    <p className="text-label-sm text-primary mt-space-sm">
+                                        {totalTime(recipe)} min total
+                                        {prepTime(recipe) > 0 && cookTime(recipe) > 0 &&
+                                            ` (prep ${prepTime(recipe)} + cook ${cookTime(recipe)})`}
+                                    </p>
+                                )}
                             </Link>
                         ))}
                     </div>
