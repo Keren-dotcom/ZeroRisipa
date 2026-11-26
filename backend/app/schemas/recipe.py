@@ -21,6 +21,7 @@ class RecipeSummary(BaseModel):
     description: str | None
     servings: int
     prep_time_minutes: int
+    cook_time_minutes: int = 0
 
 
 class RecipeRead(RecipeSummary):

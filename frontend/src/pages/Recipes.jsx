@@ -92,7 +92,7 @@ export default function Recipes() {
                     {isGenerating ? 'Generating...' : 'Generate recipes'}
                 </button>
 
-                {recipes.length > 0 && !isGenerating && (
+                {recipes.length > 0 && (
                     <p className="mt-space-sm text-label-sm text-on-surface-variant">
                         Pin a recipe to keep it at the top. The others disappear {ttlMinutes} minutes after they were generated.
                     </p>
@@ -110,7 +110,7 @@ export default function Recipes() {
                     </div>
                 )}
 
-                {!isLoading && !isGenerating && recipes.length > 0 && (
+                {!isLoading && recipes.length > 0 && (
                     <div className="mt-space-lg grid sm:grid-cols-2 lg:grid-cols-3 gap-space-md">
                         {recipes.map((recipe) => (
                             <div
@@ -148,8 +148,8 @@ export default function Recipes() {
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         className={`w-5 h-5 ${recipe.is_pinned
-                                                ? 'fill-primary stroke-primary'
-                                                : 'fill-none stroke-current text-on-surface-variant'
+                                            ? 'fill-primary stroke-primary'
+                                            : 'fill-none stroke-current text-on-surface-variant'
                                             }`}
                                     >
                                         <path d="M12 17v5" />
