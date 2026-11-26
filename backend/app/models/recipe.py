@@ -19,6 +19,7 @@ class Recipe(TimestampMixin, Base):
     __table_args__ = (
         CheckConstraint("servings > 0", name="servings_positive"),
         CheckConstraint("prep_time_minutes >= 0", name="prep_time_non_negative"),
+        CheckConstraint("cook_time_minutes >= 0", name="cook_time_non_negative"),
     )
 
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -27,6 +28,7 @@ class Recipe(TimestampMixin, Base):
     instructions: Mapped[str] = mapped_column(Text)
     servings: Mapped[int] = mapped_column(Integer)
     prep_time_minutes: Mapped[int] = mapped_column(Integer)
+    cook_time_minutes: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
 
     ingredients: Mapped[list["RecipeIngredient"]] = relationship(
         back_populates="recipe", cascade="all, delete-orphan"

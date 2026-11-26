@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta, timezone
+﻿from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
@@ -9,6 +9,7 @@ from app.core.deps import get_current_user
 from app.db.session import get_db
 from app.models import Recipe, RecipeIngredient, RecipePin, RecipeSuggestion, User
 from app.schemas.recipe import RecipePage, RecipeRead
+from app.services.gemini_recipes import generate_zero_waste_recipes
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
@@ -22,6 +23,7 @@ class RecipeCard(BaseModel):
     description: str | None = None
     servings: int
     prep_time_minutes: int
+    cook_time_minutes: int = 0
     is_pinned: bool = False
     pinned_at: datetime | None = None
 
@@ -38,13 +40,14 @@ def _card(recipe: Recipe, pinned_at: datetime | None = None) -> RecipeCard:
         description=recipe.description,
         servings=recipe.servings,
         prep_time_minutes=recipe.prep_time_minutes,
+        cook_time_minutes=recipe.cook_time_minutes,
         is_pinned=pinned_at is not None,
         pinned_at=pinned_at,
     )
 
 
 def _current_recipes(db: Session, user_id: int) -> CurrentRecipes:
-    """Pinned recipes + recipes generated in the last RECIPE_TTL, for one user."""
+    """Pinned recipes first, then active generated recipes ordered newest-first."""
     cutoff = datetime.now(timezone.utc) - RECIPE_TTL
 
     pinned = db.execute(
@@ -55,11 +58,12 @@ def _current_recipes(db: Session, user_id: int) -> CurrentRecipes:
     ).all()
     pinned_ids = {recipe.id for recipe, _ in pinned}
 
+    # Ordonăm descrescător după generated_at și id ca ultimele generate să fie primele sub cele pinned
     suggested = db.scalars(
         select(Recipe)
         .join(RecipeSuggestion, RecipeSuggestion.recipe_id == Recipe.id)
         .where(RecipeSuggestion.user_id == user_id, RecipeSuggestion.generated_at >= cutoff)
-        .order_by(Recipe.name, Recipe.id)
+        .order_by(RecipeSuggestion.generated_at.desc(), Recipe.id.desc())
     ).all()
 
     items = [_card(recipe, pinned_at) for recipe, pinned_at in pinned]
@@ -68,12 +72,8 @@ def _current_recipes(db: Session, user_id: int) -> CurrentRecipes:
 
 
 def pick_recipes(db: Session, user: User) -> list[Recipe]:
-    """Which recipes to suggest after pressing "Generate recipes".
-
-    For now: all predefined recipes. This is the place where the Gemini call goes later:
-    generate recipes from the user's pantry, save them as Recipe rows and return them.
-    """
-    return list(db.scalars(select(Recipe).order_by(Recipe.name, Recipe.id)).all())
+    """Generate zero-waste recipes from the user's pantry using Gemini."""
+    return generate_zero_waste_recipes(db, user)
 
 
 @router.get("", response_model=RecipePage)
@@ -101,13 +101,11 @@ def current_recipes(db: Session = Depends(get_db), user: User = Depends(get_curr
 
 @router.post("/generate", response_model=CurrentRecipes)
 def generate_recipes(db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> CurrentRecipes:
-    """"Generate recipes": replaces the user's previous (unpinned) recipes with new ones. Pins are kept."""
+    """"Generate recipes": adds 6 new recipes on top of existing (non-expired) ones. Pins and active recipes are kept."""
     now = datetime.now(timezone.utc)
-    # forget this user's previous suggestions, and clean up everybody's expired ones
+    # Ștergem DOAR sugestiile expirate (mai vechi de 15 min), păstrăm ce e deja generat și activ
     db.execute(
-        delete(RecipeSuggestion).where(
-            (RecipeSuggestion.user_id == user.id) | (RecipeSuggestion.generated_at < now - RECIPE_TTL)
-        )
+        delete(RecipeSuggestion).where(RecipeSuggestion.generated_at < now - RECIPE_TTL)
     )
     for recipe in pick_recipes(db, user):
         db.add(RecipeSuggestion(user_id=user.id, recipe_id=recipe.id, generated_at=now))
