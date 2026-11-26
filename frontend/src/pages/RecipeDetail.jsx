@@ -19,7 +19,7 @@ const requestRecipe = async (id) => {
     }
 };
 
-// Accepts several shapes, because the exact fields of your Recipe model are not known yet.
+// Accepts several shapes, because the exact fields of the Recipe model are not known yet.
 // Check the console log below and adjust this function if something shows up empty.
 const normalizeRecipe = (raw) => {
     const r = raw.recipe ?? raw;
@@ -42,8 +42,8 @@ const normalizeRecipe = (raw) => {
         id: r.id,
         title: r.title ?? r.name,
         description: r.description ?? '',
-        prep: r.prep_time ?? 0,
-        cook: r.cook_time ?? 0,
+        prep: Number(r.prep_time_minutes ?? r.prep_time ?? 0) || 0,
+        cook: Number(r.cook_time_minutes ?? r.cook_time ?? 0) || 0,
         steps,
         ingredients,
     };
