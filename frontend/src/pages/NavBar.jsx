@@ -1,4 +1,5 @@
 import { Link, NavLink } from 'react-router-dom';
+import logo from '../assets/logo.png';
 
 const linkClass = ({ isActive }) =>
     `px-space-md py-space-sm rounded-full font-label-md transition-colors ${isActive ? 'bg-primary text-on-primary' : 'text-on-surface hover:bg-surface-variant'
@@ -8,7 +9,7 @@ export default function NavBar() {
     return (
         <nav className="grid grid-cols-[1fr_auto_1fr] items-center px-gutter-sm md:px-gutter py-space-sm bg-surface-container-lowest border-b border-outline-variant">
             <Link to="/recipes" className="flex items-center gap-space-sm font-headline-sm text-on-surface">
-                <span className="w-9 h-9 rounded-full bg-primary text-on-primary grid place-items-center font-semibold">P</span>
+                <img src={logo} alt="PantryZero logo" className="w-9 h-9 rounded-full object-cover" />
                 <span className="hidden sm:inline">PantryZero</span>
             </Link>
 

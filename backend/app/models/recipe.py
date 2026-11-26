@@ -1,7 +1,8 @@
+from datetime import datetime
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, ForeignKey, Integer, Numeric, String, Text
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, Numeric, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -49,3 +50,37 @@ class RecipeIngredient(Base):
 
     recipe: Mapped["Recipe"] = relationship(back_populates="ingredients")
     ingredient: Mapped["Ingredient"] = relationship(back_populates="recipe_links")
+
+
+class RecipePin(Base):
+    """A recipe pinned by a user. Pins never expire; they stay until the user unpins."""
+
+    __tablename__ = "recipe_pins"
+
+    # NOTE: "users.id" assumes your users table is called "users"
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id", ondelete="CASCADE"), primary_key=True
+    )
+    pinned_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+
+class RecipeSuggestion(Base):
+    """A recipe shown to a user after pressing "Generate recipes".
+    It is visible for RECIPE_TTL (see the recipes routes) and then disappears, unless it is pinned."""
+
+    __tablename__ = "recipe_suggestions"
+
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id", ondelete="CASCADE"), primary_key=True
+    )
+    generated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), index=True
+    )

@@ -1,12 +1,79 @@
+from datetime import datetime, timedelta, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func, select
+from pydantic import BaseModel
+from sqlalchemy import delete, func, select
 from sqlalchemy.orm import Session, selectinload
 
+from app.core.deps import get_current_user
 from app.db.session import get_db
-from app.models import Recipe, RecipeIngredient
+from app.models import Recipe, RecipeIngredient, RecipePin, RecipeSuggestion, User
 from app.schemas.recipe import RecipePage, RecipeRead
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
+
+# How long generated (unpinned) recipes stay visible after pressing "Generate recipes"
+RECIPE_TTL = timedelta(minutes=15)
+
+
+class RecipeCard(BaseModel):
+    id: int
+    name: str
+    description: str | None = None
+    servings: int
+    prep_time_minutes: int
+    is_pinned: bool = False
+    pinned_at: datetime | None = None
+
+
+class CurrentRecipes(BaseModel):
+    items: list[RecipeCard]  # pinned recipes first (most recently pinned on top), then the others
+    ttl_minutes: int
+
+
+def _card(recipe: Recipe, pinned_at: datetime | None = None) -> RecipeCard:
+    return RecipeCard(
+        id=recipe.id,
+        name=recipe.name,
+        description=recipe.description,
+        servings=recipe.servings,
+        prep_time_minutes=recipe.prep_time_minutes,
+        is_pinned=pinned_at is not None,
+        pinned_at=pinned_at,
+    )
+
+
+def _current_recipes(db: Session, user_id: int) -> CurrentRecipes:
+    """Pinned recipes + recipes generated in the last RECIPE_TTL, for one user."""
+    cutoff = datetime.now(timezone.utc) - RECIPE_TTL
+
+    pinned = db.execute(
+        select(Recipe, RecipePin.pinned_at)
+        .join(RecipePin, RecipePin.recipe_id == Recipe.id)
+        .where(RecipePin.user_id == user_id)
+        .order_by(RecipePin.pinned_at.desc())
+    ).all()
+    pinned_ids = {recipe.id for recipe, _ in pinned}
+
+    suggested = db.scalars(
+        select(Recipe)
+        .join(RecipeSuggestion, RecipeSuggestion.recipe_id == Recipe.id)
+        .where(RecipeSuggestion.user_id == user_id, RecipeSuggestion.generated_at >= cutoff)
+        .order_by(Recipe.name, Recipe.id)
+    ).all()
+
+    items = [_card(recipe, pinned_at) for recipe, pinned_at in pinned]
+    items += [_card(recipe) for recipe in suggested if recipe.id not in pinned_ids]
+    return CurrentRecipes(items=items, ttl_minutes=int(RECIPE_TTL.total_seconds() // 60))
+
+
+def pick_recipes(db: Session, user: User) -> list[Recipe]:
+    """Which recipes to suggest after pressing "Generate recipes".
+
+    For now: all predefined recipes. This is the place where the Gemini call goes later:
+    generate recipes from the user's pantry, save them as Recipe rows and return them.
+    """
+    return list(db.scalars(select(Recipe).order_by(Recipe.name, Recipe.id)).all())
 
 
 @router.get("", response_model=RecipePage)
@@ -25,6 +92,29 @@ def list_recipes(
     return RecipePage(items=items, total=total, limit=limit, offset=offset)
 
 
+# NOTE: "/current" and "/generate" must stay above "/{recipe_id}", otherwise FastAPI tries to read "current" as an id.
+@router.get("/current", response_model=CurrentRecipes)
+def current_recipes(db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> CurrentRecipes:
+    """What the Recipes page shows: pinned recipes + recipes generated in the last 15 minutes."""
+    return _current_recipes(db, user.id)
+
+
+@router.post("/generate", response_model=CurrentRecipes)
+def generate_recipes(db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> CurrentRecipes:
+    """"Generate recipes": replaces the user's previous (unpinned) recipes with new ones. Pins are kept."""
+    now = datetime.now(timezone.utc)
+    # forget this user's previous suggestions, and clean up everybody's expired ones
+    db.execute(
+        delete(RecipeSuggestion).where(
+            (RecipeSuggestion.user_id == user.id) | (RecipeSuggestion.generated_at < now - RECIPE_TTL)
+        )
+    )
+    for recipe in pick_recipes(db, user):
+        db.add(RecipeSuggestion(user_id=user.id, recipe_id=recipe.id, generated_at=now))
+    db.commit()
+    return _current_recipes(db, user.id)
+
+
 @router.get("/{recipe_id}", response_model=RecipeRead)
 def get_recipe(recipe_id: int, db: Session = Depends(get_db)) -> Recipe:
     """A recipe, with its ingredients and quantities."""
@@ -36,3 +126,20 @@ def get_recipe(recipe_id: int, db: Session = Depends(get_db)) -> Recipe:
     if recipe is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recipe not found")
     return recipe
+
+
+@router.put("/{recipe_id}/pin", status_code=status.HTTP_204_NO_CONTENT)
+def pin_recipe(recipe_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> None:
+    """Pin a recipe. Pinning an already pinned recipe does nothing."""
+    if db.get(Recipe, recipe_id) is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Recipe not found")
+    if db.get(RecipePin, (user.id, recipe_id)) is None:
+        db.add(RecipePin(user_id=user.id, recipe_id=recipe_id))
+        db.commit()
+
+
+@router.delete("/{recipe_id}/pin", status_code=status.HTTP_204_NO_CONTENT)
+def unpin_recipe(recipe_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_user)) -> None:
+    """Remove the pin. Does nothing if the recipe was not pinned."""
+    db.execute(delete(RecipePin).where(RecipePin.user_id == user.id, RecipePin.recipe_id == recipe_id))
+    db.commit()
